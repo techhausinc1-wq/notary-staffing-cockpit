@@ -261,7 +261,7 @@
         <div class="stat">
           <div class="stat-label">Notary Bookings Open</div>
           <div class="stat-value" id="stat-notary-open">5</div>
-          <div class="stat-delta mute">2 unassigned right now</div>
+          <div class="stat-delta mute" id="stat-notary-unassigned-note"></div>
         </div>
         <div class="stat">
           <div class="stat-label">Active VA Placements</div>
@@ -1158,7 +1158,9 @@
 
   function renderDashboard() {
     const open = state.notaryBookings.filter(b => b.status !== 'completed');
+    const unassignedCount = state.notaryBookings.filter(b => b.status === 'unassigned').length;
     document.getElementById('stat-notary-open').textContent = open.length;
+    document.getElementById('stat-notary-unassigned-note').textContent = `${unassignedCount} unassigned right now`;
     document.getElementById('stat-roster-size').textContent = state.notaryRoster.length + state.vaRoster.length;
 
     const dashNotary = document.getElementById('dash-notary-list');
@@ -1331,7 +1333,7 @@
     updateBadges();
   }
 
-  document.getElementById('today-date').textContent = new Date('2026-07-16').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   renderAll();
 </script>
