@@ -108,7 +108,8 @@
   .row-name { font-size: 13.5px; font-weight: 600; }
   .row-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
 
-  .tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.4px; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; white-space: nowrap; }
+  .tag { display: inline-flex; align-items: center; gap: 6px; font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0; padding: 4px 11px 4px 9px; border-radius: 20px; text-transform: none; white-space: nowrap; }
+  .tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
   .tag.gold { background: #f7ecd3; color: #8a6414; }
   .tag.emerald { background: #dcf0e6; color: #1f6b48; }
   .tag.amber { background: #f7e6c4; color: var(--amber); }
@@ -654,7 +655,7 @@
             <option>Other</option>
           </select>
         </div>
-        <div class="full"><label for="booking-notes">Notes</label><textarea id="booking-notes" name="notes" rows="2"></textarea></div>
+        <div class="full"><label for="booking-notes">Notes</label><textarea id="booking-notes" name="notes" rows="4"></textarea></div>
       </div>
       <div class="form-actions">
         <button type="button" class="btn ghost" onclick="closeModal('booking-modal')">Cancel</button>
@@ -685,7 +686,7 @@
             <option>Google Ads</option>
           </select>
         </div>
-        <div class="full"><label for="va-notes">Notes</label><textarea id="va-notes" name="notes" rows="2"></textarea></div>
+        <div class="full"><label for="va-notes">Notes</label><textarea id="va-notes" name="notes" rows="4"></textarea></div>
       </div>
       <div class="form-actions">
         <button type="button" class="btn ghost" onclick="closeModal('va-request-modal')">Cancel</button>
@@ -742,7 +743,7 @@
       <form id="add-note-form" onsubmit="submitNote(event)">
         <div class="form-grid">
           <div><label for="note-author">Your name</label><input type="text" id="note-author" placeholder="e.g. Alex, or your name" required></div>
-          <div class="full"><label for="note-text">Note</label><textarea id="note-text" rows="2" placeholder="Add what you know — a call update, a client preference, anything the next person should see." required></textarea></div>
+          <div class="full"><label for="note-text">Note</label><textarea id="note-text" rows="5" placeholder="Add what you know — a call update, a client preference, anything the next person should see." required></textarea></div>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn primary">Add note</button>
@@ -890,7 +891,7 @@
 
   // ============ PROFILES (role-based view switching) ============
   const PROFILES = [
-    { id: 'alex', name: 'Alex', role: 'Owner', avatar: 'A', visibleSections: ['core', 'notary', 'va', 'growth', 'shared', 'platform'], landOn: 'dashboard' },
+    { id: 'alex', name: 'Alex', role: 'Owner', avatar: 'A', visibleSections: ['core', 'myjobs', 'notary', 'va', 'growth', 'shared', 'platform'], landOn: 'dashboard' },
     { id: 'dispatch', name: 'Grace T.', role: 'Dispatch Coordinator', avatar: 'G', visibleSections: ['notary'], landOn: 'notary-bookings' },
     { id: 'vamanager', name: 'Maria Santos', role: 'VA Account Manager', avatar: 'M', visibleSections: ['va'], landOn: 'va-requests' },
     { id: 'notary-rosa', name: 'Rosa Delgado', role: 'Field Notary', avatar: 'R', visibleSections: ['myjobs'], landOn: 'my-jobs', rosterName: 'Rosa Delgado' },
