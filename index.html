@@ -335,11 +335,23 @@
     <div class="view" id="view-notary-bookings">
       <div class="page-header">
         <div>
-          <div class="page-subtitle">Mobile Notary</div>
+          <div class="page-subtitle">Mobile Notary · Nationwide</div>
           <div class="page-title">Bookings</div>
         </div>
         <div class="page-actions">
           <button class="btn primary" onclick="openBookingModal()">+ New booking</button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="panel-body pad" style="display:flex; flex-wrap:wrap; gap:8px;">
+          <span class="tag muted">Real Estate Closings</span>
+          <span class="tag muted">Loan Signings</span>
+          <span class="tag muted">Legal Documents</span>
+          <span class="tag muted">Healthcare / Medical</span>
+          <span class="tag muted">Apostille</span>
+          <span class="tag muted">Remote Online Notary (RON)</span>
+          <span class="tag muted">I-9 Employment Verification</span>
         </div>
       </div>
 
@@ -625,7 +637,7 @@
       <div class="form-grid">
         <div class="full"><label>Client name</label><input type="text" name="client" required></div>
         <div><label>Phone</label><input type="tel" name="phone" required></div>
-        <div><label>Document type</label><input type="text" name="docType" placeholder="Loan signing, POA, etc." required></div>
+        <div><label>Document type</label><input type="text" name="docType" placeholder="Loan signing, apostille, RON, I-9, etc." required></div>
         <div class="full"><label>Service address</label><input type="text" name="address" required></div>
         <div><label>Requested date</label><input type="date" name="date" required></div>
         <div><label>Requested time</label><input type="time" name="time" required></div>
@@ -755,6 +767,12 @@
         { author: 'Intake', text: 'Repeat client, 3rd booking.', at: '2026-07-14 6:12 PM' },
       ] },
       { id: 'b5', client: 'Tom Escamilla', phone: '(210) 555-0165', docType: 'Vehicle title transfer', address: '5100 Fredericksburg Rd, San Antonio, TX', date: '2026-07-15', time: '11:30', source: 'Google Ads', status: 'completed', assignee: 'Rosa Delgado', notes: [] },
+      { id: 'b6', client: 'Sofia Marchetti', phone: '(210) 555-0189', docType: 'Apostille — international adoption documents', address: '3300 N St Mary\'s St, San Antonio, TX', date: '2026-07-18', time: '13:00', source: 'Referral', status: 'unassigned', assignee: null, notes: [
+        { author: 'Intake', text: 'Documents need to be routed to the TX Secretary of State for apostille after notarization — client understands the extra turnaround.', at: '2026-07-16 4:45 PM' },
+      ] },
+      { id: 'b7', client: 'Denise Coleman', phone: '(720) 555-0224', docType: 'Remote Online Notary (RON) — I-9 employment verification', address: 'Remote video session — client in Denver, CO', date: '2026-07-17', time: '15:30', source: 'Google Ads', status: 'assigned', assignee: 'Deborah Ríos', notes: [
+        { author: 'Dispatch (Grace T.)', text: 'Out-of-state client, booked through the RON platform. No travel needed — confirmed ID verification requirements with client in advance.', at: '2026-07-16 2:10 PM' },
+      ] },
     ],
     vaRequests: [
       { id: 'v1', client: 'Coastline Roofing', skills: 'Bookkeeping + AR/AP', hours: '20 hrs/wk', budget: '$9/hr', source: 'Referral', status: 'requested', assignee: null, notes: [] },
