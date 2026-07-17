@@ -132,7 +132,8 @@
   .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
 
   .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  @media (max-width: 900px) { .board { grid-template-columns: 1fr; } }
+  .board.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 900px) { .board, .board.cols-2 { grid-template-columns: 1fr; } }
   .board-col { background: var(--bg-3); border-radius: 10px; padding: 14px; }
   .board-col-h { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; display: flex; justify-content: space-between; }
   .card { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
@@ -264,19 +265,19 @@
           <div class="stat-delta mute" id="stat-notary-unassigned-note"></div>
         </div>
         <div class="stat">
-          <div class="stat-label">Active VA Placements</div>
-          <div class="stat-value">6</div>
-          <div class="stat-delta">+2 this month</div>
+          <div class="stat-label">VA Requests</div>
+          <div class="stat-value" id="stat-va-total">4</div>
+          <div class="stat-delta mute" id="stat-va-delta"></div>
         </div>
         <div class="stat">
           <div class="stat-label">Vetted Roster Size</div>
-          <div class="stat-value" id="stat-roster-size">11</div>
-          <div class="stat-delta mute">7 notaries · 4 VAs</div>
+          <div class="stat-value" id="stat-roster-size">9</div>
+          <div class="stat-delta mute" id="stat-roster-breakdown"></div>
         </div>
         <div class="stat">
           <div class="stat-label">New Leads (7 days)</div>
-          <div class="stat-value">17</div>
-          <div class="stat-delta">12 Google · 5 referral</div>
+          <div class="stat-value" id="stat-leads-7d">0</div>
+          <div class="stat-delta" id="stat-leads-7d-delta"></div>
         </div>
       </div>
 
@@ -316,16 +317,7 @@
               <div class="panel-title">Lead channels, last 7 days</div>
               <a class="panel-link" onclick="navigate('leads')">Detail</a>
             </div>
-            <div class="panel-body pad">
-              <div class="channel-bar-wrap">
-                <div class="channel-bar-label"><span>Google Ads — Mobile Notary</span><span class="n">12</span></div>
-                <div class="channel-bar"><div class="channel-bar-fill" style="width:70%; background:var(--primary);"></div></div>
-              </div>
-              <div class="channel-bar-wrap">
-                <div class="channel-bar-label"><span>Personal / Referral — VA Staffing</span><span class="n">5</span></div>
-                <div class="channel-bar"><div class="channel-bar-fill" style="width:30%; background:var(--gold);"></div></div>
-              </div>
-            </div>
+            <div class="panel-body pad" id="dash-channel-bars"></div>
           </div>
         </div>
       </div>
@@ -390,11 +382,11 @@
           <p style="font-size:13.5px; color:var(--text-dim); margin-bottom:16px;">Find referral partners in a zip code — law firms, title &amp; escrow companies, real estate brokerages, mortgage lenders, senior living facilities. These are ongoing partners, not one-off bookings, so this is where new steady volume comes from.</p>
           <form id="scout-form" onsubmit="runScout(event)" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
             <div>
-              <label style="display:block; font-size:11.5px; font-weight:600; color:var(--text-dim); margin-bottom:5px;">Zip code</label>
+              <label for="scout-zip" style="display:block; font-size:11.5px; font-weight:600; color:var(--text-dim); margin-bottom:5px;">Zip code</label>
               <input type="text" id="scout-zip" name="zip" placeholder="78247" pattern="[0-9]{5}" required style="width:140px;">
             </div>
             <div>
-              <label style="display:block; font-size:11.5px; font-weight:600; color:var(--text-dim); margin-bottom:5px;">Category</label>
+              <label for="scout-category" style="display:block; font-size:11.5px; font-weight:600; color:var(--text-dim); margin-bottom:5px;">Category</label>
               <select id="scout-category" name="category" style="width:220px;">
                 <option value="all">All categories</option>
                 <option value="Law Firm">Law firms</option>
@@ -465,6 +457,7 @@
         <div class="table-wrap">
           <table id="pool-table"></table>
         </div>
+        <div class="panel-body" style="font-size:12px; color:var(--text-mute); padding-top:0;" id="pool-pending-note"></div>
       </div>
     </div>
 
@@ -488,16 +481,9 @@
         <div>
           <div class="panel">
             <div class="panel-header"><div class="panel-title">Channel mix</div></div>
-            <div class="panel-body pad">
-              <div class="channel-bar-wrap">
-                <div class="channel-bar-label"><span>Google Ads (Notary)</span><span class="n">12</span></div>
-                <div class="channel-bar"><div class="channel-bar-fill" style="width:70%; background:var(--primary);"></div></div>
-              </div>
-              <div class="channel-bar-wrap">
-                <div class="channel-bar-label"><span>Personal / Referral (VA)</span><span class="n">5</span></div>
-                <div class="channel-bar"><div class="channel-bar-fill" style="width:30%; background:var(--gold);"></div></div>
-              </div>
-              <p style="font-size:12px; color:var(--text-mute); margin-top:12px;">Notary demand is search-intent driven — people need a notary right now. VA staffing sells on trust, so referral and word-of-mouth convert better than paid search.</p>
+            <div class="panel-body pad" id="leads-channel-bars"></div>
+            <div class="panel-body pad" style="padding-top:0;">
+              <p style="font-size:12px; color:var(--text-mute);">Notary demand is search-intent driven — people need a notary right now. VA staffing sells on trust, so referral and word-of-mouth convert better than paid search.</p>
             </div>
           </div>
         </div>
@@ -634,21 +620,21 @@
     </div>
     <form id="booking-form" onsubmit="submitBooking(event)">
       <div class="form-grid">
-        <div class="full"><label>Client name</label><input type="text" name="client" required></div>
-        <div><label>Phone</label><input type="tel" name="phone" required></div>
-        <div><label>Document type</label><input type="text" name="docType" placeholder="Loan signing, apostille, RON, I-9, etc." required></div>
-        <div class="full"><label>Service address</label><input type="text" name="address" required></div>
-        <div><label>Requested date</label><input type="date" name="date" required></div>
-        <div><label>Requested time</label><input type="time" name="time" required></div>
-        <div class="full"><label>Lead source</label>
-          <select name="source">
+        <div class="full"><label for="booking-client">Client name</label><input type="text" id="booking-client" name="client" required></div>
+        <div><label for="booking-phone">Phone</label><input type="tel" id="booking-phone" name="phone" required></div>
+        <div><label for="booking-docType">Document type</label><input type="text" id="booking-docType" name="docType" placeholder="Loan signing, apostille, RON, I-9, etc." required></div>
+        <div class="full"><label for="booking-address">Service address</label><input type="text" id="booking-address" name="address" required></div>
+        <div><label for="booking-date">Requested date</label><input type="date" id="booking-date" name="date" required></div>
+        <div><label for="booking-time">Requested time</label><input type="time" id="booking-time" name="time" required></div>
+        <div class="full"><label for="booking-source">Lead source</label>
+          <select id="booking-source" name="source">
             <option>Google Ads</option>
             <option>Referral</option>
             <option>Repeat client</option>
             <option>Other</option>
           </select>
         </div>
-        <div class="full"><label>Notes</label><textarea name="notes" rows="2"></textarea></div>
+        <div class="full"><label for="booking-notes">Notes</label><textarea id="booking-notes" name="notes" rows="2"></textarea></div>
       </div>
       <div class="form-actions">
         <button type="button" class="btn ghost" onclick="closeModal('booking-modal')">Cancel</button>
@@ -667,19 +653,19 @@
     </div>
     <form id="va-request-form" onsubmit="submitVaRequest(event)">
       <div class="form-grid">
-        <div class="full"><label>Client / business name</label><input type="text" name="client" required></div>
-        <div><label>Skills needed</label><input type="text" name="skills" placeholder="Bookkeeping, CS, EA..." required></div>
-        <div><label>Hours / week</label><input type="text" name="hours" placeholder="20 hrs/wk" required></div>
-        <div><label>Budget</label><input type="text" name="budget" placeholder="$8/hr" required></div>
-        <div><label>Lead source</label>
-          <select name="source">
+        <div class="full"><label for="va-client">Client / business name</label><input type="text" id="va-client" name="client" required></div>
+        <div><label for="va-skills">Skills needed</label><input type="text" id="va-skills" name="skills" placeholder="Bookkeeping, CS, EA..." required></div>
+        <div><label for="va-hours">Hours / week</label><input type="text" id="va-hours" name="hours" placeholder="20 hrs/wk" required></div>
+        <div><label for="va-budget">Budget</label><input type="text" id="va-budget" name="budget" placeholder="$8/hr" required></div>
+        <div><label for="va-source">Lead source</label>
+          <select id="va-source" name="source">
             <option>Referral</option>
             <option>Personal outreach</option>
             <option>Repeat client</option>
             <option>Google Ads</option>
           </select>
         </div>
-        <div class="full"><label>Notes</label><textarea name="notes" rows="2"></textarea></div>
+        <div class="full"><label for="va-notes">Notes</label><textarea id="va-notes" name="notes" rows="2"></textarea></div>
       </div>
       <div class="form-actions">
         <button type="button" class="btn ghost" onclick="closeModal('va-request-modal')">Cancel</button>
@@ -699,11 +685,11 @@
     <form id="person-form" onsubmit="submitPerson(event)">
       <input type="hidden" name="type" id="person-type">
       <div class="form-grid">
-        <div class="full"><label>Full name</label><input type="text" name="name" required></div>
-        <div><label id="person-skill-label">Service area / county</label><input type="text" name="skillField" required></div>
-        <div><label>Phone</label><input type="tel" name="phone" required></div>
-        <div class="full"><label>Vetting status</label>
-          <select name="vetted">
+        <div class="full"><label for="person-name">Full name</label><input type="text" id="person-name" name="name" required></div>
+        <div><label id="person-skill-label" for="person-skillField">Service area / county</label><input type="text" id="person-skillField" name="skillField" required></div>
+        <div><label for="person-phone">Phone</label><input type="tel" id="person-phone" name="phone" required></div>
+        <div class="full"><label for="person-vetted">Vetting status</label>
+          <select id="person-vetted" name="vetted">
             <option value="1">Passed inspection — vetted</option>
             <option value="0">Pending review</option>
           </select>
@@ -735,8 +721,8 @@
       <div id="detail-notes" style="margin-bottom: 14px;"></div>
       <form id="add-note-form" onsubmit="submitNote(event)">
         <div class="form-grid">
-          <div><label>Your name</label><input type="text" id="note-author" placeholder="e.g. Alex, or your name" required></div>
-          <div class="full"><label>Note</label><textarea id="note-text" rows="2" placeholder="Add what you know — a call update, a client preference, anything the next person should see." required></textarea></div>
+          <div><label for="note-author">Your name</label><input type="text" id="note-author" placeholder="e.g. Alex, or your name" required></div>
+          <div class="full"><label for="note-text">Note</label><textarea id="note-text" rows="2" placeholder="Add what you know — a call update, a client preference, anything the next person should see." required></textarea></div>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn primary">Add note</button>
@@ -752,24 +738,30 @@
   // ============ SEED / STATE ============
   const STORE_KEY = 'vetted-cockpit-v1';
 
+  function relDate(offsetDays) {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return d.toISOString().slice(0, 10);
+  }
+
   const seed = {
     notaryBookings: [
-      { id: 'b1', client: 'Marcus Webb', phone: '(210) 555-0142', docType: 'Loan signing — refinance', address: '4210 Broadway, San Antonio, TX', date: '2026-07-16', time: '14:00', source: 'Google Ads', status: 'unassigned', assignee: null, notes: [
+      { id: 'b1', client: 'Marcus Webb', phone: '(210) 555-0142', docType: 'Loan signing — refinance', address: '4210 Broadway, San Antonio, TX', date: relDate(0), time: '14:00', source: 'Google Ads', status: 'unassigned', assignee: null, notes: [
         { author: 'Intake', text: 'Client works late, prefers after 1pm.', at: '2026-07-15 3:20 PM' },
       ] },
-      { id: 'b2', client: 'Priya Chandran', phone: '(210) 555-0198', docType: 'Power of attorney', address: '812 Blanco Rd, San Antonio, TX', date: '2026-07-16', time: '16:30', source: 'Referral', status: 'unassigned', assignee: null, notes: [] },
-      { id: 'b3', client: 'David Nguyen', phone: '(210) 555-0177', docType: 'Real estate closing', address: '2200 Alamo Heights Blvd, San Antonio, TX', date: '2026-07-17', time: '10:00', source: 'Google Ads', status: 'assigned', assignee: 'Rosa Delgado', notes: [
+      { id: 'b2', client: 'Priya Chandran', phone: '(210) 555-0198', docType: 'Power of attorney', address: '812 Blanco Rd, San Antonio, TX', date: relDate(0), time: '16:30', source: 'Referral', status: 'unassigned', assignee: null, notes: [] },
+      { id: 'b3', client: 'David Nguyen', phone: '(210) 555-0177', docType: 'Real estate closing', address: '2200 Alamo Heights Blvd, San Antonio, TX', date: relDate(1), time: '10:00', source: 'Google Ads', status: 'assigned', assignee: 'Rosa Delgado', notes: [
         { author: 'Dispatch (Grace T.)', text: 'Client confirmed address by phone. Gate code is 4521 — call box says "Nguyen." Please arrive 5 min early, parking is tight.', at: '2026-07-16 9:05 AM' },
         { author: 'Rosa Delgado (field notary)', text: 'Confirmed with client directly, all set for Friday 10am. Bringing extra copies per his request.', at: '2026-07-16 11:40 AM' },
       ] },
-      { id: 'b4', client: 'Karen Boyle', phone: '(210) 555-0113', docType: 'Affidavit', address: '900 E Sonterra Blvd, San Antonio, TX', date: '2026-07-15', time: '09:00', source: 'Repeat client', status: 'completed', assignee: 'James Whitfield', notes: [
+      { id: 'b4', client: 'Karen Boyle', phone: '(210) 555-0113', docType: 'Affidavit', address: '900 E Sonterra Blvd, San Antonio, TX', date: relDate(-1), time: '09:00', source: 'Repeat client', status: 'completed', assignee: 'James Whitfield', notes: [
         { author: 'Intake', text: 'Repeat client, 3rd booking.', at: '2026-07-14 6:12 PM' },
       ] },
-      { id: 'b5', client: 'Tom Escamilla', phone: '(210) 555-0165', docType: 'Vehicle title transfer', address: '5100 Fredericksburg Rd, San Antonio, TX', date: '2026-07-15', time: '11:30', source: 'Google Ads', status: 'completed', assignee: 'Rosa Delgado', notes: [] },
-      { id: 'b6', client: 'Sofia Marchetti', phone: '(210) 555-0189', docType: 'Apostille — international adoption documents', address: '3300 N St Mary\'s St, San Antonio, TX', date: '2026-07-18', time: '13:00', source: 'Referral', status: 'unassigned', assignee: null, notes: [
+      { id: 'b5', client: 'Tom Escamilla', phone: '(210) 555-0165', docType: 'Vehicle title transfer', address: '5100 Fredericksburg Rd, San Antonio, TX', date: relDate(-1), time: '11:30', source: 'Google Ads', status: 'completed', assignee: 'Rosa Delgado', notes: [] },
+      { id: 'b6', client: 'Sofia Marchetti', phone: '(210) 555-0189', docType: 'Apostille — international adoption documents', address: '3300 N St Mary\'s St, San Antonio, TX', date: relDate(2), time: '13:00', source: 'Referral', status: 'unassigned', assignee: null, notes: [
         { author: 'Intake', text: 'Documents need to be routed to the TX Secretary of State for apostille after notarization — client understands the extra turnaround.', at: '2026-07-16 4:45 PM' },
       ] },
-      { id: 'b7', client: 'Denise Coleman', phone: '(720) 555-0224', docType: 'Remote Online Notary (RON) — I-9 employment verification', address: 'Remote video session — client in Denver, CO', date: '2026-07-17', time: '15:30', source: 'Google Ads', status: 'assigned', assignee: 'Deborah Ríos', notes: [
+      { id: 'b7', client: 'Denise Coleman', phone: '(720) 555-0224', docType: 'Remote Online Notary (RON) — I-9 employment verification', address: 'Remote video session — client in Denver, CO', date: relDate(1), time: '15:30', source: 'Google Ads', status: 'assigned', assignee: 'Deborah Ríos', notes: [
         { author: 'Dispatch (Grace T.)', text: 'Out-of-state client, booked through the RON platform. No travel needed — confirmed ID verification requirements with client in advance.', at: '2026-07-16 2:10 PM' },
       ] },
     ],
@@ -799,15 +791,15 @@
       { id: 'a4', name: 'Noel Reyes', field: 'Bookkeeping, AR/AP', phone: '(210) 555-0478', vetted: false },
     ],
     leads: [
-      { id: 'l1', name: 'Marcus Webb', channel: 'Google Ads', business: 'Notary', date: '2026-07-15', status: 'Booked' },
-      { id: 'l2', name: 'Priya Chandran', channel: 'Referral', business: 'Notary', date: '2026-07-15', status: 'Booked' },
-      { id: 'l3', name: 'Coastline Roofing', channel: 'Referral', business: 'VA Staffing', date: '2026-07-14', status: 'Requested' },
-      { id: 'l4', name: 'Sandra Ellis', channel: 'Google Ads', business: 'Notary', date: '2026-07-14', status: 'Quoted' },
-      { id: 'l5', name: 'Boerne Realty Group', channel: 'Personal outreach', business: 'VA Staffing', date: '2026-07-13', status: 'Interviewing' },
-      { id: 'l6', name: 'Frank Delgado', channel: 'Google Ads', business: 'Notary', date: '2026-07-13', status: 'No response' },
+      { id: 'l1', name: 'Marcus Webb', channel: 'Google Ads', business: 'Notary', date: relDate(-1), status: 'Booked' },
+      { id: 'l2', name: 'Priya Chandran', channel: 'Referral', business: 'Notary', date: relDate(-1), status: 'Booked' },
+      { id: 'l3', name: 'Coastline Roofing', channel: 'Referral', business: 'VA Staffing', date: relDate(-2), status: 'Requested' },
+      { id: 'l4', name: 'Sandra Ellis', channel: 'Google Ads', business: 'Notary', date: relDate(-2), status: 'Quoted' },
+      { id: 'l5', name: 'Boerne Realty Group', channel: 'Personal outreach', business: 'VA Staffing', date: relDate(-3), status: 'Interviewing' },
+      { id: 'l6', name: 'Frank Delgado', channel: 'Google Ads', business: 'Notary', date: relDate(-3), status: 'No response' },
     ],
     inbox: [
-      { id: 'e1', to: 'marcus.webb@email.com', subject: 'Your mobile notary is confirmed — July 16, 2:00 PM', sentAt: '2026-07-15 4:12 PM' },
+      { id: 'e1', to: 'david.nguyen@email.com', subject: 'Your mobile notary is confirmed — Rosa Delgado, Friday 10:00 AM', sentAt: '2026-07-16 9:10 AM' },
       { id: 'e2', to: 'lena.ortiz@dentaloffice.com', subject: 'Meet your matched VA — Grace Villanueva', sentAt: '2026-07-13 11:05 AM' },
       { id: 'e3', to: 'karen.boyle@email.com', subject: 'Notary visit completed — receipt attached', sentAt: '2026-07-15 9:40 AM' },
     ],
@@ -834,7 +826,14 @@
       const raw = localStorage.getItem(STORE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (!parsed.scoutContacted) parsed.scoutContacted = {};
+        // Defensively backfill any top-level key missing from an older saved
+        // snapshot (e.g. a schema field added after Alex's first visit) so a
+        // stale localStorage entry can't null out a whole section on reload.
+        Object.keys(seed).forEach(key => {
+          if (parsed[key] === undefined || parsed[key] === null) {
+            parsed[key] = JSON.parse(JSON.stringify(seed[key]));
+          }
+        });
         migrateNotes(parsed.notaryBookings);
         migrateNotes(parsed.vaRequests);
         return parsed;
@@ -853,6 +852,11 @@
     renderAll();
   }
   document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => navigate(n.dataset.view)));
+
+  function esc(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
 
   function nowStamp() {
     return new Date().toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -902,20 +906,20 @@
     document.getElementById('detail-title').textContent = r.client;
 
     const fieldRows = isNotary ? [
-      ['Phone', r.phone],
-      ['Document type', r.docType],
-      ['Address', r.address],
-      ['Requested', `${r.date} · ${r.time}`],
-      ['Source', r.source],
+      ['Phone', esc(r.phone)],
+      ['Document type', esc(r.docType)],
+      ['Address', esc(r.address)],
+      ['Requested', `${esc(r.date)} · ${esc(r.time)}`],
+      ['Source', esc(r.source)],
       ['Status', statusTag(r.status)],
-      ['Assigned to', r.assignee || '<span style="color:var(--text-mute);">Not yet assigned</span>'],
+      ['Assigned to', r.assignee ? esc(r.assignee) : '<span style="color:var(--text-mute);">Not yet assigned</span>'],
     ] : [
-      ['Skills needed', r.skills],
-      ['Hours / week', r.hours],
-      ['Budget', r.budget],
-      ['Source', r.source],
+      ['Skills needed', esc(r.skills)],
+      ['Hours / week', esc(r.hours)],
+      ['Budget', esc(r.budget)],
+      ['Source', esc(r.source)],
       ['Status', statusTag(r.status)],
-      ['Matched to', r.assignee || '<span style="color:var(--text-mute);">Not yet matched</span>'],
+      ['Matched to', r.assignee ? esc(r.assignee) : '<span style="color:var(--text-mute);">Not yet matched</span>'],
     ];
 
     document.getElementById('detail-fields').innerHTML = fieldRows.map(([label, val]) => `
@@ -929,9 +933,9 @@
     notesBox.innerHTML = r.notes.length ? r.notes.map(n => `
       <div class="row">
         <div class="row-body">
-          <div class="row-name">${n.author}</div>
-          <div class="row-meta">${n.text}</div>
-          <div class="row-meta" style="margin-top:2px; color:var(--text-mute);">${n.at}</div>
+          <div class="row-name">${esc(n.author)}</div>
+          <div class="row-meta">${esc(n.text)}</div>
+          <div class="row-meta" style="margin-top:2px; color:var(--text-mute);">${esc(n.at)}</div>
         </div>
       </div>
     `).join('') : '<div class="empty">No notes yet — be the first to add one.</div>';
@@ -965,6 +969,7 @@
       source: f.get('source'), status: 'unassigned', assignee: null,
       notes: initialNote ? [{ author: 'You', text: initialNote, at: nowStamp() }] : []
     });
+    state.leads.unshift({ id: 'l' + Date.now(), name: f.get('client'), channel: f.get('source'), business: 'Notary', date: relDate(0), status: 'Booked' });
     saveState();
     closeModal('booking-modal');
     toast('Booking created — awaiting assignment');
@@ -981,6 +986,7 @@
       budget: f.get('budget'), source: f.get('source'), status: 'requested', assignee: null,
       notes: vaInitialNote ? [{ author: 'You', text: vaInitialNote, at: nowStamp() }] : []
     });
+    state.leads.unshift({ id: 'l' + Date.now(), name: f.get('client'), channel: f.get('source'), business: 'VA Staffing', date: relDate(0), status: 'Requested' });
     saveState();
     closeModal('va-request-modal');
     toast('Client request logged');
@@ -1161,7 +1167,20 @@
     const unassignedCount = state.notaryBookings.filter(b => b.status === 'unassigned').length;
     document.getElementById('stat-notary-open').textContent = open.length;
     document.getElementById('stat-notary-unassigned-note').textContent = `${unassignedCount} unassigned right now`;
-    document.getElementById('stat-roster-size').textContent = state.notaryRoster.length + state.vaRoster.length;
+
+    const vettedNotaries = state.notaryRoster.filter(n => n.vetted).length;
+    const vettedVAs = state.vaRoster.filter(a => a.vetted).length;
+    document.getElementById('stat-roster-size').textContent = vettedNotaries + vettedVAs;
+    document.getElementById('stat-roster-breakdown').textContent = `${vettedNotaries} notaries · ${vettedVAs} VAs`;
+
+    const placedCount = state.vaRequests.filter(v => v.status === 'placed').length;
+    document.getElementById('stat-va-total').textContent = state.vaRequests.length;
+    document.getElementById('stat-va-delta').textContent = `${placedCount} placed · ${state.vaRequests.length - placedCount} in progress`;
+
+    const leadStats = computeLeadStats();
+    document.getElementById('stat-leads-7d').textContent = leadStats.total;
+    document.getElementById('stat-leads-7d-delta').textContent = `${leadStats.google} Google · ${leadStats.other} referral`;
+    renderChannelBars('dash-channel-bars');
 
     const dashNotary = document.getElementById('dash-notary-list');
     const unassigned = state.notaryBookings.filter(b => b.status === 'unassigned').slice(0, 4);
@@ -1169,8 +1188,8 @@
       <div class="row clickable" onclick="openDetail('notary','${b.id}')">
         <div class="row-lead">${b.date.slice(5)} ${b.time}</div>
         <div class="row-body">
-          <div class="row-name">${b.client} — ${b.docType}</div>
-          <div class="row-meta">${b.address}</div>
+          <div class="row-name">${esc(b.client)} — ${esc(b.docType)}</div>
+          <div class="row-meta">${esc(b.address)}</div>
         </div>
         <button class="btn sm gold" onclick="event.stopPropagation(); assignBooking('${b.id}')">Assign</button>
       </div>
@@ -1180,10 +1199,10 @@
     const inProgress = state.vaRequests.filter(v => v.status !== 'placed').slice(0, 4);
     dashVa.innerHTML = inProgress.length ? inProgress.map(v => `
       <div class="row clickable" onclick="openDetail('va','${v.id}')">
-        <div class="row-lead">${v.hours}</div>
+        <div class="row-lead">${esc(v.hours)}</div>
         <div class="row-body">
-          <div class="row-name">${v.client} — ${v.skills}</div>
-          <div class="row-meta">${v.assignee ? 'Matched: ' + v.assignee : 'Not yet matched'} · ${v.budget}</div>
+          <div class="row-name">${esc(v.client)} — ${esc(v.skills)}</div>
+          <div class="row-meta">${v.assignee ? 'Matched: ' + esc(v.assignee) : 'Not yet matched'} · ${esc(v.budget)}</div>
         </div>
         ${statusTag(v.status)}
       </div>
@@ -1204,8 +1223,8 @@
           <div class="board-col-h"><span>${c.label}</span><span>${items.length}</span></div>
           ${items.length ? items.map(b => `
             <div class="card clickable" onclick="openDetail('notary','${b.id}')">
-              <div class="card-name">${b.client}${b.notes.length ? ` <span class="tag muted" style="font-size:9px;">${b.notes.length} note${b.notes.length > 1 ? 's' : ''}</span>` : ''}</div>
-              <div class="card-meta">${b.docType}<br>${b.date} · ${b.time}<br>${b.address}</div>
+              <div class="card-name">${esc(b.client)}${b.notes.length ? ` <span class="tag muted" style="font-size:9px;">${b.notes.length} note${b.notes.length > 1 ? 's' : ''}</span>` : ''}</div>
+              <div class="card-meta">${esc(b.docType)}<br>${b.date} · ${b.time}<br>${esc(b.address)}</div>
               <div class="card-foot">
                 <span class="tag muted">${b.source}</span>
                 ${c.key === 'unassigned' ? `<button class="btn sm gold" onclick="event.stopPropagation(); assignBooking('${b.id}')">Assign</button>` : ''}
@@ -1227,7 +1246,7 @@
       { key: 'placed', label: 'Placed' },
     ];
     const board = document.getElementById('va-board');
-    board.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    board.classList.add('cols-2');
     board.innerHTML = cols.map(c => {
       const items = state.vaRequests.filter(v => v.status === c.key);
       return `
@@ -1235,8 +1254,8 @@
           <div class="board-col-h"><span>${c.label}</span><span>${items.length}</span></div>
           ${items.length ? items.map(v => `
             <div class="card clickable" onclick="openDetail('va','${v.id}')">
-              <div class="card-name">${v.client}${v.notes.length ? ` <span class="tag muted" style="font-size:9px;">${v.notes.length} note${v.notes.length > 1 ? 's' : ''}</span>` : ''}</div>
-              <div class="card-meta">${v.skills}<br>${v.hours} · ${v.budget}${v.assignee ? '<br>Matched: ' + v.assignee : ''}</div>
+              <div class="card-name">${esc(v.client)}${v.notes.length ? ` <span class="tag muted" style="font-size:9px;">${v.notes.length} note${v.notes.length > 1 ? 's' : ''}</span>` : ''}</div>
+              <div class="card-meta">${esc(v.skills)}<br>${esc(v.hours)} · ${esc(v.budget)}${v.assignee ? '<br>Matched: ' + esc(v.assignee) : ''}</div>
               <div class="card-foot">
                 <span class="tag muted">${v.source}</span>
                 ${c.key !== 'placed' ? `<button class="btn sm gold" onclick="event.stopPropagation(); advanceVa('${v.id}')">Advance</button>` : `<span class="tag emerald">Active</span>`}
@@ -1250,9 +1269,9 @@
 
   function rosterRow(p, role) {
     return `<tr>
-      <td><strong>${p.name}</strong></td>
-      <td>${p.field}</td>
-      <td>${p.phone}</td>
+      <td><strong>${esc(p.name)}</strong></td>
+      <td>${esc(p.field)}</td>
+      <td>${esc(p.phone)}</td>
       <td>${p.vetted ? '<span class="vetted-badge">Vetted</span>' : '<span class="tag amber">Pending review</span>'}</td>
       <td><span class="tag muted">${role}</span></td>
     </tr>`;
@@ -1271,10 +1290,13 @@
   function renderPool() {
     const t = document.getElementById('pool-table');
     const rows = [
-      ...state.notaryRoster.map(n => rosterRow(n, 'Field Notary')),
-      ...state.vaRoster.map(a => rosterRow(a, 'Virtual Assistant')),
+      ...state.notaryRoster.filter(n => n.vetted).map(n => rosterRow(n, 'Field Notary')),
+      ...state.vaRoster.filter(a => a.vetted).map(a => rosterRow(a, 'Virtual Assistant')),
     ];
     t.innerHTML = `<tr><th>Name</th><th>Area / skills</th><th>Phone</th><th>Status</th><th>Role</th></tr>` + rows.join('');
+    const pendingCount = state.notaryRoster.filter(n => !n.vetted).length + state.vaRoster.filter(a => !a.vetted).length;
+    const noteEl = document.getElementById('pool-pending-note');
+    if (noteEl) noteEl.textContent = pendingCount ? `${pendingCount} more currently pending review — not shown here until they pass inspection.` : '';
   }
 
   function renderLeads() {
@@ -1287,6 +1309,34 @@
         <td>${l.date}</td>
         <td>${l.status}</td>
       </tr>`).join('');
+    renderChannelBars('leads-channel-bars');
+  }
+
+  function computeLeadStats() {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 7);
+    const recent = state.leads.filter(l => new Date(l.date) >= cutoff);
+    const google = recent.filter(l => l.channel === 'Google Ads').length;
+    return { total: recent.length, google, other: recent.length - google };
+  }
+
+  function renderChannelBars(containerId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const stats = computeLeadStats();
+    const denom = (stats.google + stats.other) || 1;
+    const googlePct = Math.round((stats.google / denom) * 100);
+    const otherPct = 100 - googlePct;
+    el.innerHTML = `
+      <div class="channel-bar-wrap">
+        <div class="channel-bar-label"><span>Google Ads</span><span class="n">${stats.google}</span></div>
+        <div class="channel-bar"><div class="channel-bar-fill" style="width:${googlePct}%; background:var(--primary);"></div></div>
+      </div>
+      <div class="channel-bar-wrap">
+        <div class="channel-bar-label"><span>Personal / Referral</span><span class="n">${stats.other}</span></div>
+        <div class="channel-bar"><div class="channel-bar-fill" style="width:${otherPct}%; background:var(--gold);"></div></div>
+      </div>
+    `;
   }
 
   function renderInbox() {
