@@ -140,6 +140,7 @@
   .clickable { cursor: pointer; transition: all 120ms; }
   .card.clickable:hover { border-color: var(--primary); box-shadow: 0 2px 10px rgba(10,31,61,0.08); }
   .row.clickable:hover { background: var(--bg-3); margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-radius: 6px; }
+  .user-chip.clickable:hover { border-color: var(--primary); background: var(--bg-3); }
   .card:last-child { margin-bottom: 0; }
   .card-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
   .card-meta { font-size: 11.5px; color: var(--text-dim); margin-bottom: 8px; }
@@ -204,40 +205,45 @@
       <div class="brand-sub">Mobile Notary + Virtual Staffing · Operator Cockpit</div>
     </div>
   </div>
-  <div class="user-chip">
-    <div class="user-avatar">A</div>
-    <span>Alex</span>
+  <div class="user-chip clickable" id="user-chip-btn" onclick="openProfileSwitcher()">
+    <div class="user-avatar" id="user-avatar">A</div>
+    <span id="user-name">Alex</span>
+    <span style="color:var(--text-mute); font-size:10px; margin-left:2px;">▾</span>
   </div>
 </header>
 
 <div class="layout">
   <nav class="sidebar">
-    <div class="nav-section">
+    <div class="nav-section" data-section="core">
       <div class="nav-label">Today</div>
       <div class="nav-item active" data-view="dashboard">Dashboard</div>
     </div>
-    <div class="nav-section">
+    <div class="nav-section" data-section="myjobs" style="display:none;">
+      <div class="nav-label">Today</div>
+      <div class="nav-item" data-view="my-jobs">My Jobs <span class="nav-badge" id="badge-my-jobs">0</span></div>
+    </div>
+    <div class="nav-section" data-section="notary">
       <div class="nav-label">Mobile Notary</div>
       <div class="nav-item" data-view="notary-bookings">Bookings <span class="nav-badge" id="badge-notary-bookings">5</span></div>
       <div class="nav-item" data-view="notary-roster">Field Notaries</div>
       <div class="nav-item" data-view="notary-scout">Notary Scout</div>
     </div>
-    <div class="nav-section">
+    <div class="nav-section" data-section="va">
       <div class="nav-label">Virtual Staffing</div>
       <div class="nav-item" data-view="va-requests">Client Requests <span class="nav-badge" id="badge-va-requests">4</span></div>
       <div class="nav-item" data-view="va-roster">VA Roster</div>
     </div>
-    <div class="nav-section">
+    <div class="nav-section" data-section="growth">
       <div class="nav-label">Trust &amp; Growth</div>
       <div class="nav-item" data-view="vetted-pool">Vetted Talent Pool</div>
       <div class="nav-item" data-view="leads">Leads &amp; Channels</div>
     </div>
-    <div class="nav-section">
+    <div class="nav-section" data-section="shared">
       <div class="nav-label">Shared Engine</div>
       <div class="nav-item" data-view="inbox">Email &amp; Confirmations</div>
       <div class="nav-item" data-view="documents">Document Inbox</div>
     </div>
-    <div class="nav-section">
+    <div class="nav-section" data-section="platform">
       <div class="nav-label">Platform</div>
       <div class="nav-item" data-view="about">What We Do</div>
     </div>
@@ -320,6 +326,20 @@
             <div class="panel-body pad" id="dash-channel-bars"></div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ============ MY JOBS (Field Notary personal view) ============ -->
+    <div class="view" id="view-my-jobs">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle" id="my-jobs-subtitle">Field Notary</div>
+          <div class="page-title">My Jobs</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Assigned to you</div></div>
+        <div class="panel-body" id="my-jobs-list"></div>
       </div>
     </div>
 
@@ -732,6 +752,29 @@
   </div>
 </div>
 
+<!-- ============ ASSIGNMENT PICKER MODAL ============ -->
+<div class="modal-overlay" id="assign-modal">
+  <div class="modal" style="max-width: 460px;">
+    <div class="modal-head">
+      <div class="modal-title" id="assign-modal-title">Assign to</div>
+      <span class="modal-close" onclick="closeModal('assign-modal')">&times;</span>
+    </div>
+    <div id="assign-modal-list"></div>
+  </div>
+</div>
+
+<!-- ============ PROFILE SWITCHER MODAL ============ -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal" style="max-width: 420px;">
+    <div class="modal-head">
+      <div class="modal-title">Switch profile</div>
+      <span class="modal-close" onclick="closeModal('profile-modal')">&times;</span>
+    </div>
+    <p style="font-size:12.5px; color:var(--text-mute); margin-bottom:14px;">Each role sees a different slice of the same system — a field notary only sees their own jobs, a dispatcher only sees the notary side, and so on.</p>
+    <div id="profile-modal-list"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -844,6 +887,54 @@
   function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
 
   let state = loadState();
+
+  // ============ PROFILES (role-based view switching) ============
+  const PROFILES = [
+    { id: 'alex', name: 'Alex', role: 'Owner', avatar: 'A', visibleSections: ['core', 'notary', 'va', 'growth', 'shared', 'platform'], landOn: 'dashboard' },
+    { id: 'dispatch', name: 'Grace T.', role: 'Dispatch Coordinator', avatar: 'G', visibleSections: ['notary'], landOn: 'notary-bookings' },
+    { id: 'vamanager', name: 'Maria Santos', role: 'VA Account Manager', avatar: 'M', visibleSections: ['va'], landOn: 'va-requests' },
+    { id: 'notary-rosa', name: 'Rosa Delgado', role: 'Field Notary', avatar: 'R', visibleSections: ['myjobs'], landOn: 'my-jobs', rosterName: 'Rosa Delgado' },
+  ];
+  let currentProfileId = localStorage.getItem('alex-demo-profile') || 'alex';
+  if (!PROFILES.find(p => p.id === currentProfileId)) currentProfileId = 'alex';
+
+  function getCurrentProfile() {
+    return PROFILES.find(p => p.id === currentProfileId) || PROFILES[0];
+  }
+
+  function applyProfile() {
+    const p = getCurrentProfile();
+    document.getElementById('user-avatar').textContent = p.avatar;
+    document.getElementById('user-name').textContent = p.name;
+    document.querySelectorAll('.nav-section[data-section]').forEach(sec => {
+      sec.style.display = p.visibleSections.includes(sec.dataset.section) ? '' : 'none';
+    });
+  }
+
+  function openProfileSwitcher() {
+    const box = document.getElementById('profile-modal-list');
+    box.innerHTML = PROFILES.map(p => `
+      <div class="row clickable" onclick="switchProfile('${p.id}')">
+        <div class="user-avatar" style="flex-shrink:0;">${p.avatar}</div>
+        <div class="row-body">
+          <div class="row-name">${p.name}</div>
+          <div class="row-meta">${p.role}</div>
+        </div>
+        ${p.id === currentProfileId ? '<span class="tag emerald">Current</span>' : ''}
+      </div>
+    `).join('');
+    openModal('profile-modal');
+  }
+
+  function switchProfile(profileId) {
+    currentProfileId = profileId;
+    localStorage.setItem('alex-demo-profile', profileId);
+    applyProfile();
+    closeModal('profile-modal');
+    const p = getCurrentProfile();
+    toast(`Switched to ${p.name} — ${p.role}`);
+    navigate(p.landOn);
+  }
 
   // ============ NAVIGATION ============
   function navigate(viewId) {
@@ -1111,14 +1202,49 @@
   }
 
   function assignBooking(id) {
-    const b = state.notaryBookings.find(x => x.id === id);
-    if (!b) return;
-    const vetted = state.notaryRoster.filter(n => n.vetted);
-    const pick = vetted[Math.floor(Math.random() * vetted.length)];
-    b.status = 'assigned';
-    b.assignee = pick ? pick.name : 'Unassigned notary';
+    openAssignPicker('notary', id);
+  }
+
+  // ============ ASSIGNMENT PICKER (real choice, not auto-random) ============
+  let assignContext = null; // { type: 'notary' | 'va', id }
+
+  function openAssignPicker(type, id) {
+    assignContext = { type, id };
+    const roster = type === 'notary' ? state.notaryRoster : state.vaRoster;
+    const vetted = roster.filter(p => p.vetted);
+    document.getElementById('assign-modal-title').textContent = type === 'notary' ? 'Assign field notary' : 'Match VA candidate';
+    const box = document.getElementById('assign-modal-list');
+    box.innerHTML = vetted.length ? vetted.map(p => `
+      <div class="row clickable" onclick="confirmAssign('${p.id}')">
+        <div class="row-body">
+          <div class="row-name">${esc(p.name)}</div>
+          <div class="row-meta">${esc(p.field)}</div>
+        </div>
+        <span class="tag muted">Select</span>
+      </div>
+    `).join('') : '<div class="empty">No vetted people on the roster yet — add one first.</div>';
+    openModal('assign-modal');
+  }
+
+  function confirmAssign(personId) {
+    if (!assignContext) return;
+    const roster = assignContext.type === 'notary' ? state.notaryRoster : state.vaRoster;
+    const person = roster.find(p => p.id === personId);
+    if (!person) return;
+    if (assignContext.type === 'notary') {
+      const b = state.notaryBookings.find(x => x.id === assignContext.id);
+      if (!b) return;
+      b.status = 'assigned';
+      b.assignee = person.name;
+    } else {
+      const v = state.vaRequests.find(x => x.id === assignContext.id);
+      if (!v) return;
+      v.status = 'matched';
+      v.assignee = person.name;
+    }
     saveState();
-    toast('Assigned to ' + b.assignee);
+    closeModal('assign-modal');
+    toast('Assigned to ' + person.name);
     renderAll();
   }
   function completeBooking(id) {
@@ -1135,17 +1261,16 @@
     if (!v) return;
     const order = ['requested', 'matched', 'interviewing', 'placed'];
     const i = order.indexOf(v.status);
-    if (i < order.length - 1) {
-      v.status = order[i + 1];
-      if (v.status === 'matched' && !v.assignee) {
-        const vetted = state.vaRoster.filter(a => a.vetted);
-        const pick = vetted[Math.floor(Math.random() * vetted.length)];
-        v.assignee = pick ? pick.name : 'Unmatched';
-      }
-      saveState();
-      toast('Request moved to ' + v.status);
-      renderAll();
+    if (i >= order.length - 1) return;
+    const nextStatus = order[i + 1];
+    if (nextStatus === 'matched' && !v.assignee) {
+      openAssignPicker('va', id);
+      return;
     }
+    v.status = nextStatus;
+    saveState();
+    toast('Request moved to ' + v.status);
+    renderAll();
   }
 
   // ============ RENDER ============
@@ -1365,6 +1490,26 @@
       </tr>`).join('');
   }
 
+  function renderMyJobs() {
+    const p = getCurrentProfile();
+    if (!p.rosterName) return;
+    document.getElementById('my-jobs-subtitle').textContent = `Field Notary · ${p.name}`;
+    const mine = state.notaryBookings.filter(b => b.assignee === p.rosterName && b.status !== 'completed');
+    const badge = document.getElementById('badge-my-jobs');
+    if (badge) badge.textContent = mine.length;
+    const box = document.getElementById('my-jobs-list');
+    box.innerHTML = mine.length ? mine.map(b => `
+      <div class="row clickable" onclick="openDetail('notary','${b.id}')">
+        <div class="row-lead">${b.date.slice(5)} ${b.time}</div>
+        <div class="row-body">
+          <div class="row-name">${esc(b.client)} — ${esc(b.docType)}</div>
+          <div class="row-meta">${esc(b.address)}</div>
+        </div>
+        <button class="btn sm primary" onclick="event.stopPropagation(); completeBooking('${b.id}')">Complete</button>
+      </div>
+    `).join('') : '<div class="empty">Nothing assigned to you right now.</div>';
+  }
+
   function updateBadges() {
     document.getElementById('badge-notary-bookings').textContent = state.notaryBookings.filter(b => b.status !== 'completed').length;
     document.getElementById('badge-va-requests').textContent = state.vaRequests.filter(v => v.status !== 'placed').length;
@@ -1380,10 +1525,13 @@
     renderLeads();
     renderInbox();
     renderDocuments();
+    renderMyJobs();
     updateBadges();
   }
 
   document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  applyProfile();
+  if (currentProfileId !== 'alex') navigate(getCurrentProfile().landOn);
 
   renderAll();
 </script>
