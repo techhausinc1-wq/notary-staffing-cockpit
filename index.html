@@ -246,11 +246,11 @@
       <div class="nav-label">Mobile Notary</div>
       <div class="nav-item" data-view="notary-bookings">Bookings <span class="nav-badge" id="badge-notary-bookings">5</span></div>
       <div class="nav-item" data-view="notary-roster">Field Notaries</div>
-      <div class="nav-item" data-view="notary-scout">Notary Scout</div>
+      <div class="nav-item" data-view="notary-scout">Notary Scout <span class="nav-badge" id="badge-notary-scout" style="display:none;">0</span></div>
     </div>
     <div class="nav-section" data-section="va">
       <div class="nav-label">Virtual Staffing</div>
-      <div class="nav-item" data-view="va-requests">Client Requests <span class="nav-badge" id="badge-va-requests">4</span></div>
+      <div class="nav-item" data-view="va-requests">Client Requests <span class="nav-badge" id="badge-va-requests">3</span></div>
       <div class="nav-item" data-view="va-roster">VA Roster</div>
     </div>
     <div class="nav-section" data-section="growth">
@@ -305,7 +305,7 @@
         </div>
         <div class="stat">
           <div class="stat-label">Vetted Roster Size</div>
-          <div class="stat-value" id="stat-roster-size">9</div>
+          <div class="stat-value" id="stat-roster-size">10</div>
           <div class="stat-delta mute" id="stat-roster-breakdown"></div>
         </div>
         <div class="stat">
@@ -335,6 +335,14 @@
         </div>
 
         <div>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Notary Scout — new referral partners found</div>
+              <a class="panel-link" onclick="navigate('notary-scout')">Open Scout</a>
+            </div>
+            <div class="panel-body pad" id="dash-scout-teaser"></div>
+          </div>
+
           <div class="panel">
             <div class="panel-header">
               <div class="panel-title">Why clients choose us</div>
@@ -884,6 +892,7 @@
       { id: 'a2', name: 'Miguel Santos', field: 'Customer support, CRM', phone: '(210) 555-0434', vetted: true },
       { id: 'a3', name: 'Bea Fernandez', field: 'Social media, email marketing', phone: '(210) 555-0456', vetted: true },
       { id: 'a4', name: 'Noel Reyes', field: 'Bookkeeping, AR/AP', phone: '(210) 555-0478', vetted: false },
+      { id: 'a5', name: 'Nadia Cruz', field: 'Bookkeeping, AR/AP, invoicing', phone: '(210) 555-0491', vetted: true },
     ],
     leads: [
       { id: 'l1', name: 'Marcus Webb', channel: 'Google Ads', business: 'Notary', date: relDate(-1), status: 'Booked' },
@@ -1255,12 +1264,8 @@
     return h;
   }
 
-  function runScout(evt) {
-    evt.preventDefault();
-    const zip = document.getElementById('scout-zip').value.trim();
-    const category = document.getElementById('scout-category').value;
+  function getScoutProspects(zip, category) {
     const cats = category === 'all' ? Object.keys(scoutTemplates) : [category];
-
     const results = [];
     cats.forEach(cat => {
       const tpl = scoutTemplates[cat];
@@ -1281,7 +1286,13 @@
         });
       }
     });
+    return results;
+  }
 
+  const DEFAULT_SCOUT_ZIP = '78209';
+  let lastScoutQuery = null;
+
+  function renderScoutResultsPanel(zip, results) {
     const panel = document.getElementById('scout-results-panel');
     const title = document.getElementById('scout-results-title');
     const box = document.getElementById('scout-results');
@@ -1293,9 +1304,9 @@
       return `
         <div class="row">
           <div class="row-body">
-            <div class="row-name">${r.name} <span class="tag muted" style="margin-left:6px;">${r.category}</span></div>
-            <div class="row-meta">${r.address} · ${r.phone}</div>
-            <div class="row-meta" style="margin-top:3px; font-style:italic;">${r.why}</div>
+            <div class="row-name">${esc(r.name)} <span class="tag muted" style="margin-left:6px;">${esc(r.category)}</span></div>
+            <div class="row-meta">${esc(r.address)} · ${esc(r.phone)}</div>
+            <div class="row-meta" style="margin-top:3px; font-style:italic;">${esc(r.why)}</div>
           </div>
           ${contacted
             ? '<span class="tag emerald">Contacted</span>'
@@ -1303,7 +1314,15 @@
         </div>
       `;
     }).join('');
+  }
 
+  function runScout(evt) {
+    evt.preventDefault();
+    const zip = document.getElementById('scout-zip').value.trim();
+    const category = document.getElementById('scout-category').value;
+    lastScoutQuery = { zip, category };
+    const results = getScoutProspects(zip, category);
+    renderScoutResultsPanel(zip, results);
     window._scoutResults = results;
   }
 
@@ -1316,7 +1335,10 @@
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
     toast('Marked contacted — draft opened');
-    runScout({ preventDefault: () => {} });
+    if (lastScoutQuery) {
+      renderScoutResultsPanel(lastScoutQuery.zip, getScoutProspects(lastScoutQuery.zip, lastScoutQuery.category));
+    }
+    renderScoutTeaser();
   }
 
   function assignBooking(id) {
@@ -1501,13 +1523,66 @@
         <div class="row-lead">${esc(v.hours)}</div>
         <div class="row-body">
           <div class="row-name">${esc(v.client)} — ${esc(v.skills)}</div>
-          <div class="row-meta">${v.assignee ? 'Matched: ' + esc(v.assignee) : 'Not yet matched'} · ${esc(v.budget)}</div>
+          <div class="row-meta">${v.assignee ? 'Candidate: ' + esc(v.assignee) : 'Not yet matched'} · ${esc(v.budget)}</div>
         </div>
         ${statusTag(v.status)}
       </div>
     `).join('') : '<div class="empty">No active requests.</div>';
 
     renderCopilotBriefing();
+    renderScoutTeaser();
+  }
+
+  // ============ SCOUT TEASER (surfaced on dashboard, not buried in its own page) ============
+  function getTeaserProspects(zip) {
+    // getScoutProspects('all') packs results in fixed category order (2 per
+    // category), so a naive slice(0,2) would always show the same category
+    // (Law Firm) forever. Pick two DIFFERENT categories deterministically so
+    // the teaser actually shows the range Scout covers.
+    const cats = Object.keys(scoutTemplates);
+    const seed = hashSeed(zip);
+    const catA = cats[seed % cats.length];
+    let catBIdx = (seed + 1) % cats.length;
+    if (cats[catBIdx] === catA) catBIdx = (catBIdx + 1) % cats.length;
+    const catB = cats[catBIdx];
+    return [catA, catB].map(cat => getScoutProspects(zip, cat)[0]).filter(Boolean);
+  }
+
+  function renderScoutTeaser() {
+    const box = document.getElementById('dash-scout-teaser');
+    if (!box) return;
+    const prospects = getTeaserProspects(DEFAULT_SCOUT_ZIP);
+    box.innerHTML = `
+      <p style="font-size:12.5px; color:var(--text-mute); margin-bottom:10px;">Copilot already ran a Scout pass near ${esc(DEFAULT_SCOUT_ZIP)} — these are the kind of referral partners it surfaces automatically, before you even ask.</p>
+      ${prospects.map(r => {
+        const contacted = !!state.scoutContacted[r.id];
+        return `
+        <div class="row">
+          <div class="row-body">
+            <div class="row-name">${esc(r.name)} <span class="tag muted" style="margin-left:6px;">${esc(r.category)}</span></div>
+            <div class="row-meta">${esc(r.address)}</div>
+          </div>
+          ${contacted
+            ? '<span class="tag emerald">Contacted</span>'
+            : `<button class="btn sm gold" onclick="draftOutreach('${r.id}', '${r.name.replace(/'/g, "\\'")}', '${r.category}')">Draft outreach</button>`}
+        </div>
+      `;
+      }).join('')}
+    `;
+    updateScoutBadge();
+  }
+
+  function updateScoutBadge() {
+    const badge = document.getElementById('badge-notary-scout');
+    if (!badge) return;
+    const prospects = getScoutProspects(DEFAULT_SCOUT_ZIP, 'all');
+    const uncontacted = prospects.filter(r => !state.scoutContacted[r.id]).length;
+    if (uncontacted > 0) {
+      badge.textContent = uncontacted + ' new';
+      badge.style.display = '';
+    } else {
+      badge.style.display = 'none';
+    }
   }
 
   // ============ COPILOT BRIEFING (computed insights, not a static blurb) ============
@@ -1529,7 +1604,7 @@
         level: 'urgent',
         title: `${urgentToday.length} booking${urgentToday.length > 1 ? 's' : ''} today with no notary assigned`,
         meta: urgentToday.map(b => b.client).join(', '),
-        action: () => openDetail('notary', urgentToday[0].id),
+        action: () => openAssignPicker('notary', urgentToday[0].id),
         actionLabel: 'Assign now',
       });
     }
@@ -1551,7 +1626,7 @@
         level: 'watch',
         title: `${staleVa.length} VA request${staleVa.length > 1 ? 's' : ''} sitting unmatched`,
         meta: staleVa.map(v => v.client).join(', '),
-        action: () => openDetail('va', staleVa[0].id),
+        action: () => openAssignPicker('va', staleVa[0].id),
         actionLabel: 'Match now',
       });
     }
@@ -1646,7 +1721,7 @@
           ${items.length ? items.map(v => `
             <div class="card clickable" onclick="openDetail('va','${v.id}')">
               <div class="card-name">${esc(v.client)}${v.notes.length ? ` <span class="tag muted" style="font-size:9px;">${v.notes.length} note${v.notes.length > 1 ? 's' : ''}</span>` : ''}</div>
-              <div class="card-meta">${esc(v.skills)}<br>${esc(v.hours)} · ${esc(v.budget)}${v.assignee ? '<br>Matched: ' + esc(v.assignee) : ''}</div>
+              <div class="card-meta">${esc(v.skills)}<br>${esc(v.hours)} · ${esc(v.budget)}${v.assignee ? '<br>Candidate: ' + esc(v.assignee) : ''}</div>
               <div class="card-foot">
                 <span class="tag muted">${v.source}</span>
                 ${c.key !== 'placed' ? `<button class="btn sm gold" onclick="event.stopPropagation(); advanceVa('${v.id}')">Advance</button>` : `<span class="tag emerald">Active</span>`}
