@@ -1,0 +1,1881 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a1f3d">
+<title>Alex Demo — AI Operations Copilot — Mobile Notary + Virtual Staffing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --bg-2: #ffffff;
+    --bg-3: #efece4;
+    --ink: #1c1a14;
+    --ink-2: #3a3628;
+    --text-dim: #6b6552;
+    --text-mute: #726b57;
+    --line: #b8ad8e;
+    --line-2: #cfc7ac;
+    --primary: #0a1f3d;
+    --primary-bright: #123a63;
+    --gold: #c7a04a;
+    --gold-bright: #dbb968;
+    --emerald: #2e7d5b;
+    --amber: #8a5a06;
+    --red: #b8324f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; line-height: 1.55; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; text-decoration: none; }
+  button { cursor: pointer; font-family: inherit; border: none; background: none; color: inherit; }
+  input, select, textarea { font-family: inherit; font-size: 14px; background: var(--bg-2); color: var(--ink); border: 1px solid var(--line); padding: 10px 14px; outline: none; border-radius: 6px; }
+  input:focus, select:focus, textarea:focus { border-color: var(--primary-bright); }
+
+  header { background: var(--bg-2); border-bottom: 1px solid var(--line); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; gap: 14px; }
+  @media (max-width: 760px) { header { padding: 12px 16px; flex-wrap: wrap; } }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; display: block; background: var(--primary); }
+  .brand-name { font-weight: 700; font-size: 16px; letter-spacing: 0.3px; }
+  .brand-sub { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.3px; color: var(--text-mute); text-transform: uppercase; margin-top: 1px; }
+  .user-chip { display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border: 1px solid var(--line); border-radius: 24px; font-size: 12px; }
+  .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+
+  .layout { display: grid; grid-template-columns: 224px 1fr; flex: 1; min-height: 0; }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: flex; flex-direction: row; overflow-x: auto; padding: 12px 16px; background: var(--bg-3); border-right: 0; border-bottom: 1px solid var(--line); gap: 6px; scrollbar-width: none; }
+    .sidebar::-webkit-scrollbar { display: none; }
+    .nav-section { margin-bottom: 0; display: flex; flex-direction: row; gap: 6px; }
+    .nav-label { display: none; }
+    .nav-item { padding: 6px 14px; font-size: 12px; white-space: nowrap; border-left: 0; border-radius: 16px; background: transparent; }
+    .nav-item.active { background: rgba(15,42,74,0.1); }
+  }
+
+  .sidebar { background: var(--bg-3); border-right: 1px solid var(--line); padding: 22px 0; overflow-y: auto; }
+  .nav-section { margin-bottom: 26px; }
+  .nav-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.8px; color: var(--text-mute); text-transform: uppercase; padding: 0 28px 8px; }
+  .nav-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 28px; color: var(--text-dim); font-size: 13.5px; border-left: 2px solid transparent; transition: all 120ms; cursor: pointer; }
+  .nav-item:hover { color: var(--ink); background: var(--bg-2); }
+  .nav-item.active { color: var(--primary); background: var(--bg-2); border-left-color: var(--gold); font-weight: 500; }
+  .nav-badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; background: #ece7d8; color: var(--text-dim); padding: 1px 7px; border-radius: 10px; }
+  .nav-item.active .nav-badge { background: #f7ecd3; color: #8a6414; }
+
+  main { padding: 28px 32px 60px; overflow-x: hidden; }
+  @media (max-width: 760px) { main { padding: 20px 16px 48px; } }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .page-subtitle { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 1.2px; color: var(--text-mute); text-transform: uppercase; margin-bottom: 4px; }
+  .page-title { font-size: 24px; font-weight: 700; letter-spacing: -0.2px; }
+  .page-actions { display: flex; gap: 10px; }
+  .btn { padding: 10px 18px; border-radius: 7px; font-size: 13px; font-weight: 600; border: 1px solid var(--line-2); }
+  .btn.ghost { background: var(--bg-2); color: var(--ink-2); }
+  .btn.ghost:hover { background: var(--bg-3); }
+  .btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn.primary:hover { background: var(--primary-bright); }
+  .btn.gold { background: var(--gold); color: var(--primary); border-color: var(--gold); font-weight: 700; }
+  .btn.gold:hover { background: var(--gold-bright); color: var(--primary); }
+  .btn.sm { padding: 6px 12px; font-size: 12px; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 26px; }
+  @media (max-width: 900px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+  .stat { background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--text-mute); text-transform: uppercase; margin-bottom: 8px; }
+  .stat-value { font-size: 26px; font-weight: 700; letter-spacing: -0.3px; }
+  .stat-delta { font-size: 12px; color: var(--emerald); margin-top: 4px; }
+  .stat-delta.neg { color: var(--red); }
+  .stat-delta.mute { color: var(--text-mute); }
+
+  .grid-2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; }
+  @media (max-width: 1080px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 18px; overflow: hidden; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .panel-title { font-size: 14px; font-weight: 600; }
+  .panel-link { font-size: 12px; color: var(--primary-bright); font-weight: 600; cursor: pointer; }
+  .panel-body { padding: 6px 20px 16px; }
+  .panel-body.pad { padding: 20px; }
+
+  .row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .row:last-child { border-bottom: none; }
+  .row-lead { width: 78px; flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-mute); }
+  .row-body { flex: 1; min-width: 0; }
+  .row-name { font-size: 13.5px; font-weight: 600; }
+  .row-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  .tag { display: inline-flex; align-items: center; gap: 6px; font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0; padding: 4px 11px 4px 9px; border-radius: 20px; text-transform: none; white-space: nowrap; }
+  .tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .tag.gold { background: #f7ecd3; color: #8a6414; }
+  .tag.emerald { background: #dcf0e6; color: #1f6b48; }
+  .tag.amber { background: #f7e6c4; color: var(--amber); }
+  .tag.muted { background: #ece7d8; color: var(--text-dim); }
+  .tag.red { background: #fbe2e8; color: var(--red); }
+  .tag.primary { background: #dde6f0; color: var(--primary); }
+
+  .vetted-badge { display: inline-flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.4px; color: var(--emerald); font-weight: 600; }
+  .vetted-badge::before { content: '✓'; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-mute); padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .table-wrap { overflow-x: auto; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 620px) { .form-grid { grid-template-columns: 1fr; } }
+  .form-grid label { display: block; font-size: 11.5px; font-weight: 600; color: var(--text-dim); margin-bottom: 5px; }
+  .form-grid .full { grid-column: 1 / -1; }
+  .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+
+  .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .board.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 900px) { .board, .board.cols-2 { grid-template-columns: 1fr; } }
+  .board-col { background: var(--bg-3); border-radius: 10px; padding: 14px; }
+  .board-col-h { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .card { background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
+  .clickable { cursor: pointer; transition: all 120ms; }
+  .card.clickable:hover { border-color: var(--primary); box-shadow: 0 2px 10px rgba(10,31,61,0.08); }
+  .row.clickable:hover { background: var(--bg-3); margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-radius: 6px; }
+  .user-chip.clickable:hover { border-color: var(--primary); background: var(--bg-3); }
+  .card:last-child { margin-bottom: 0; }
+  .card-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .card-meta { font-size: 11.5px; color: var(--text-dim); margin-bottom: 8px; }
+  .card-foot { display: flex; justify-content: space-between; align-items: center; }
+
+  .empty { text-align: center; padding: 40px 20px; color: var(--text-mute); font-size: 13px; }
+
+  .brief-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--line); border-left: 3px solid var(--line-2); padding-left: 14px; margin-bottom: 2px; }
+  .brief-item:last-child { border-bottom: none; margin-bottom: 0; }
+  .brief-item.urgent { border-left-color: var(--red); }
+  .brief-item.watch { border-left-color: var(--amber); }
+  .brief-item.opportunity { border-left-color: var(--emerald); }
+  .brief-item-body { flex: 1; min-width: 0; }
+  .brief-item-title { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+  .brief-item-meta { font-size: 12px; color: var(--text-dim); }
+  .brief-clean { text-align: center; padding: 22px 20px; color: var(--text-mute); font-size: 13px; }
+
+  .match-card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer; transition: all 120ms; }
+  .match-card:hover { border-color: var(--primary); box-shadow: 0 2px 10px rgba(10,31,61,0.08); }
+  .match-card.best { border-color: var(--gold); background: #fdfaf2; }
+  .match-reasons { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+  .match-reason { font-size: 11px; color: var(--text-dim); background: var(--bg-3); padding: 2px 8px; border-radius: 10px; }
+
+  .draft-box { background: var(--bg-3); border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-top: 10px; }
+  .draft-box textarea { width: 100%; min-height: 110px; resize: vertical; margin-bottom: 10px; }
+
+  .channel-bar-wrap { margin-bottom: 14px; }
+  .channel-bar-label { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px; }
+  .channel-bar-label .n { font-family: 'JetBrains Mono', monospace; color: var(--text-dim); }
+  .channel-bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .channel-bar-fill { height: 100%; border-radius: 4px; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(20,18,12,0.45); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: var(--bg-2); border-radius: 12px; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; padding: 24px; }
+  .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .modal-title { font-size: 16px; font-weight: 700; }
+  .modal-close { font-size: 20px; color: var(--text-mute); cursor: pointer; line-height: 1; }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--primary); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 200; opacity: 0; transform: translateY(8px); transition: all 200ms; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="modal-overlay active" id="access-gate" style="z-index:1000; background:var(--primary);">
+  <div class="modal" style="max-width:380px; text-align:center;">
+    <img src="data:image/png;base64,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" style="width:56px;height:56px;border-radius:50%;margin-bottom:16px;" alt="logo">
+    <div class="modal-title" style="margin-bottom:6px;">Alex Demo</div>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:18px;">Enter the access code to continue.</p>
+    <form onsubmit="checkAccessCode(event)">
+      <input type="password" id="access-code-input" placeholder="Access code" style="text-align:center; margin-bottom:12px;" autofocus>
+      <button type="submit" class="btn primary" style="width:100%;">Enter</button>
+      <p id="access-error" style="color:var(--red); font-size:12px; margin-top:10px; display:none;">Incorrect code — try again.</p>
+    </form>
+  </div>
+</div>
+<script>
+  (function () {
+    if (localStorage.getItem('alex-demo-unlocked') === '1') {
+      document.getElementById('access-gate').classList.remove('active');
+    }
+  })();
+  function checkAccessCode(evt) {
+    evt.preventDefault();
+    const val = document.getElementById('access-code-input').value.trim().toLowerCase();
+    if (val === 'alex2026') {
+      localStorage.setItem('alex-demo-unlocked', '1');
+      document.getElementById('access-gate').classList.remove('active');
+    } else {
+      document.getElementById('access-error').style.display = 'block';
+    }
+  }
+</script>
+
+<header>
+  <div class="brand">
+    <img class="brand-mark" src="data:image/png;base64,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" alt="Alex's logo">
+    <div>
+      <div class="brand-name">Alex Demo</div>
+      <div class="brand-sub">Mobile Notary + Virtual Staffing · AI Operations Copilot</div>
+    </div>
+  </div>
+  <div class="user-chip clickable" id="user-chip-btn" onclick="openProfileSwitcher()">
+    <div class="user-avatar" id="user-avatar">A</div>
+    <span id="user-name">Alex</span>
+    <span style="color:var(--text-mute); font-size:10px; margin-left:2px;">▾</span>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-section" data-section="core">
+      <div class="nav-label">Today</div>
+      <div class="nav-item active" data-view="dashboard">Dashboard</div>
+    </div>
+    <div class="nav-section" data-section="myjobs" style="display:none;">
+      <div class="nav-label">Today</div>
+      <div class="nav-item" data-view="my-jobs">My Jobs <span class="nav-badge" id="badge-my-jobs">0</span></div>
+    </div>
+    <div class="nav-section" data-section="notary">
+      <div class="nav-label">Mobile Notary</div>
+      <div class="nav-item" data-view="notary-bookings">Bookings <span class="nav-badge" id="badge-notary-bookings">5</span></div>
+      <div class="nav-item" data-view="notary-roster">Field Notaries</div>
+      <div class="nav-item" data-view="notary-scout">Notary Scout <span class="nav-badge" id="badge-notary-scout" style="display:none;">0</span></div>
+    </div>
+    <div class="nav-section" data-section="va">
+      <div class="nav-label">Virtual Staffing</div>
+      <div class="nav-item" data-view="va-requests">Client Requests <span class="nav-badge" id="badge-va-requests">3</span></div>
+      <div class="nav-item" data-view="va-roster">VA Roster</div>
+    </div>
+    <div class="nav-section" data-section="growth">
+      <div class="nav-label">Trust &amp; Growth</div>
+      <div class="nav-item" data-view="vetted-pool">Vetted Talent Pool</div>
+      <div class="nav-item" data-view="leads">Leads &amp; Channels</div>
+    </div>
+    <div class="nav-section" data-section="shared">
+      <div class="nav-label">Shared Engine</div>
+      <div class="nav-item" data-view="inbox">Email &amp; Confirmations</div>
+      <div class="nav-item" data-view="documents">Document Inbox</div>
+    </div>
+    <div class="nav-section" data-section="platform">
+      <div class="nav-label">Platform</div>
+      <div class="nav-item" data-view="about">What We Do</div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ============ DASHBOARD ============ -->
+    <div class="view active" id="view-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle" id="today-date"></div>
+          <div class="page-title">Good afternoon, Alex</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn ghost" onclick="navigate('leads')">Leads &amp; channels</button>
+          <button class="btn primary" onclick="openBookingModal()">+ New notary booking</button>
+        </div>
+      </div>
+
+      <div class="panel" id="copilot-briefing-panel">
+        <div class="panel-header">
+          <div class="panel-title">Copilot briefing</div>
+          <span class="tag primary">Auto-generated just now</span>
+        </div>
+        <div class="panel-body pad" id="copilot-briefing-body"></div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-label">Notary Bookings Open</div>
+          <div class="stat-value" id="stat-notary-open">5</div>
+          <div class="stat-delta mute" id="stat-notary-unassigned-note"></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">VA Requests</div>
+          <div class="stat-value" id="stat-va-total">4</div>
+          <div class="stat-delta mute" id="stat-va-delta"></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Vetted Roster Size</div>
+          <div class="stat-value" id="stat-roster-size">10</div>
+          <div class="stat-delta mute" id="stat-roster-breakdown"></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">New Leads (7 days)</div>
+          <div class="stat-value" id="stat-leads-7d">0</div>
+          <div class="stat-delta" id="stat-leads-7d-delta"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Notary bookings — needs assignment</div>
+              <a class="panel-link" onclick="navigate('notary-bookings')">All bookings</a>
+            </div>
+            <div class="panel-body" id="dash-notary-list"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">VA requests — in progress</div>
+              <a class="panel-link" onclick="navigate('va-requests')">All requests</a>
+            </div>
+            <div class="panel-body" id="dash-va-list"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Notary Scout — new referral partners found</div>
+              <a class="panel-link" onclick="navigate('notary-scout')">Open Scout</a>
+            </div>
+            <div class="panel-body pad" id="dash-scout-teaser"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Why clients choose us</div>
+            </div>
+            <div class="panel-body pad" style="font-size:13px; color:var(--text-dim); line-height:1.7;">
+              <p style="margin-bottom:10px;">Most people don't know a direct, vetted alternative exists — they default to whatever agency shows up first in search.</p>
+              <p style="margin-bottom:10px;"><strong style="color:var(--ink);">Every person on the roster passed inspection.</strong> No unvetted subcontractors, no anonymous gig marketplace.</p>
+              <p>No middlemen taking a cut between the client and the person doing the work.</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Lead channels, last 7 days</div>
+              <a class="panel-link" onclick="navigate('leads')">Detail</a>
+            </div>
+            <div class="panel-body pad" id="dash-channel-bars"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ MY JOBS (Field Notary personal view) ============ -->
+    <div class="view" id="view-my-jobs">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle" id="my-jobs-subtitle">Field Notary</div>
+          <div class="page-title">My Jobs</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Assigned to you</div></div>
+        <div class="panel-body" id="my-jobs-list"></div>
+      </div>
+    </div>
+
+    <!-- ============ NOTARY BOOKINGS ============ -->
+    <div class="view" id="view-notary-bookings">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">Mobile Notary · Nationwide</div>
+          <div class="page-title">Bookings</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn primary" onclick="openBookingModal()">+ New booking</button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="panel-body pad" style="display:flex; flex-wrap:wrap; gap:8px;">
+          <span class="tag muted">Real Estate Closings</span>
+          <span class="tag muted">Loan Signings</span>
+          <span class="tag muted">Legal Documents</span>
+          <span class="tag muted">Healthcare / Medical</span>
+          <span class="tag muted">Apostille</span>
+          <span class="tag muted">Remote Online Notary (RON)</span>
+          <span class="tag muted">I-9 Employment Verification</span>
+        </div>
+      </div>
+
+      <div class="board" id="notary-board"></div>
+    </div>
+
+    <!-- ============ NOTARY ROSTER ============ -->
+    <div class="view" id="view-notary-roster">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">Mobile Notary</div>
+          <div class="page-title">Field Notaries</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn ghost" onclick="openPersonModal('notary')">+ Add field notary</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="table-wrap">
+          <table id="notary-roster-table"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ NOTARY SCOUT ============ -->
+    <div class="view" id="view-notary-scout">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">Mobile Notary</div>
+          <div class="page-title">Notary Scout</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-body pad">
+          <p style="font-size:13.5px; color:var(--text-dim); margin-bottom:16px;">Find referral partners in a zip code — law firms, title &amp; escrow companies, real estate brokerages, mortgage lenders, senior living facilities. These are ongoing partners, not one-off bookings, so this is where new steady volume comes from.</p>
+          <form id="scout-form" onsubmit="runScout(event)" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+            <div>
+              <label for="scout-zip" style="display:block; font-size:11.5px; font-weight:600; color:var(--text-dim); margin-bottom:5px;">Zip code</label>
+              <input type="text" id="scout-zip" name="zip" placeholder="78247" pattern="[0-9]{5}" required style="width:140px;">
+            </div>
+            <div>
+              <label for="scout-category" style="display:block; font-size:11.5px; font-weight:600; color:var(--text-dim); margin-bottom:5px;">Category</label>
+              <select id="scout-category" name="category" style="width:220px;">
+                <option value="all">All categories</option>
+                <option value="Law Firm">Law firms</option>
+                <option value="Title &amp; Escrow">Title &amp; escrow companies</option>
+                <option value="Real Estate Brokerage">Real estate brokerages</option>
+                <option value="Mortgage Lender">Mortgage lenders</option>
+                <option value="Senior Living">Senior living / hospice</option>
+                <option value="Financial Advisory">Financial advisory firms</option>
+              </select>
+            </div>
+            <button type="submit" class="btn gold">Run Scout</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="panel" id="scout-results-panel" style="display:none;">
+        <div class="panel-header">
+          <div class="panel-title" id="scout-results-title">Results</div>
+        </div>
+        <div class="panel-body" id="scout-results"></div>
+      </div>
+    </div>
+
+    <!-- ============ VA CLIENT REQUESTS ============ -->
+    <div class="view" id="view-va-requests">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">Virtual Staffing</div>
+          <div class="page-title">Client Requests</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn primary" onclick="openVaRequestModal()">+ New request</button>
+        </div>
+      </div>
+      <div class="board" id="va-board"></div>
+    </div>
+
+    <!-- ============ VA ROSTER ============ -->
+    <div class="view" id="view-va-roster">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">Virtual Staffing</div>
+          <div class="page-title">VA Roster</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn ghost" onclick="openPersonModal('va')">+ Add VA candidate</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="table-wrap">
+          <table id="va-roster-table"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VETTED TALENT POOL ============ -->
+    <div class="view" id="view-vetted-pool">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">Trust &amp; Growth</div>
+          <div class="page-title">Vetted Talent Pool</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Everyone who has passed inspection — notaries and VAs together</div>
+        </div>
+        <div class="table-wrap">
+          <table id="pool-table"></table>
+        </div>
+        <div class="panel-body" style="font-size:12px; color:var(--text-mute); padding-top:0;" id="pool-pending-note"></div>
+      </div>
+    </div>
+
+    <!-- ============ LEADS & CHANNELS ============ -->
+    <div class="view" id="view-leads">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">Trust &amp; Growth</div>
+          <div class="page-title">Leads &amp; Channels</div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title">Recent leads</div></div>
+            <div class="table-wrap">
+              <table id="leads-table"></table>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title">Channel mix</div></div>
+            <div class="panel-body pad" id="leads-channel-bars"></div>
+            <div class="panel-body pad" style="padding-top:0;">
+              <p style="font-size:12px; color:var(--text-mute);">Notary demand is search-intent driven — people need a notary right now. VA staffing sells on trust, so referral and word-of-mouth convert better than paid search.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ EMAIL & CONFIRMATIONS ============ -->
+    <div class="view" id="view-inbox">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">Shared Engine</div>
+          <div class="page-title">Email &amp; Confirmations</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Outgoing confirmation log</div></div>
+        <div class="panel-body" id="inbox-list"></div>
+      </div>
+    </div>
+
+    <!-- ============ DOCUMENT INBOX ============ -->
+    <div class="view" id="view-documents">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">Shared Engine</div>
+          <div class="page-title">Document Inbox</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Signed &amp; received documents, linked to bookings</div></div>
+        <div class="table-wrap">
+          <table id="documents-table"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ WHAT WE DO ============ -->
+    <div class="view" id="view-about">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">Platform</div>
+          <div class="page-title">What This Platform Does</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-body pad" style="font-size:14px; color:var(--text-dim); line-height:1.75;">
+          <p>A CRM gives you a place to record what happened. This is built to tell you what needs to happen next, and do part of the work for you. The workflows you can click through here (bookings, roster, matching, notes, lead tracking, the Copilot layer below) are genuinely working, not static mockups. Two honest exceptions: Scout uses illustrative sample prospects rather than a live business directory, and the integrations below marked "Demo-Only" are simulated inside this app, not wired to a real inbox or calendar yet. Both are real next steps, not already-built.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">The part a CRM doesn't do</div></div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="row-body"><div class="row-name">Copilot Briefing</div><div class="row-meta">Every time you load the dashboard, it re-scans every booking, request, and lead and tells you what's actually urgent today — not a report you have to go build yourself.</div></div>
+          </div>
+          <div class="row">
+            <div class="row-body"><div class="row-name">Smart-Ranked Assignment</div><div class="row-meta">Assigning a job isn't a plain list anymore — candidates are ranked by current workload, coverage area, and track record on similar work, with the reasoning shown. You still pick — it just does the thinking first.</div></div>
+          </div>
+          <div class="row">
+            <div class="row-body"><div class="row-name">One-Click Message Drafting</div><div class="row-meta">Open any booking or request and draft a client confirmation or an assignment text in one click, pre-filled from the real record — copy it or send it, instead of typing it from scratch every time.</div></div>
+          </div>
+          <div class="row">
+            <div class="row-body"><div class="row-name">Notary Scout</div><div class="row-meta">Finds new referral-source prospects (title companies, law firms, lenders) in a zip code and drafts the outreach — a CRM stores contacts, it doesn't go find you new ones.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Core modules running in this build</div></div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="row-body"><div class="row-name">Booking &amp; Assignment Engine</div><div class="row-meta">Requests come in, get assigned to a vetted person, tracked through to completion — the Notary Bookings and VA Requests boards.</div></div>
+          </div>
+          <div class="row">
+            <div class="row-body"><div class="row-name">Vetted Roster &amp; Trust Layer</div><div class="row-meta">One pool of people who passed inspection, shared across both lines of business — the Vetted Talent Pool view.</div></div>
+          </div>
+          <div class="row">
+            <div class="row-body"><div class="row-name">Lead &amp; Channel Tracking</div><div class="row-meta">Every inquiry tagged by source — paid search, referral, repeat client — so you know what's actually generating business.</div></div>
+          </div>
+          <div class="row">
+            <div class="row-body"><div class="row-name">Email &amp; Document Automation</div><div class="row-meta">Confirmations go out automatically, signed documents file themselves against the booking that produced them.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Integrations</div></div>
+
+        <div style="padding:14px 20px 4px;">
+          <div class="stat-label" style="margin-bottom:0;">Communication</div>
+        </div>
+        <div class="panel-body">
+          <div class="row"><div class="row-body"><div class="row-name">Email (Gmail / Outlook)</div><div class="row-meta">Booking confirmations, VA match notices, document receipts</div></div><span class="tag gold">Demo-Only</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">SMS reminders</div><div class="row-meta">Text confirmations and day-of reminders to clients</div></div><span class="tag muted">Available</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">Call tracking &amp; recording</div><div class="row-meta">Know which ad or number a call came from before you pick up</div></div><span class="tag muted">Available</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">Website live chat</div><div class="row-meta">Answer questions on your site before a lead calls or bounces</div></div><span class="tag muted">Available</span></div>
+        </div>
+
+        <div style="padding:14px 20px 4px; border-top:1px solid var(--line);">
+          <div class="stat-label" style="margin-bottom:0;">Documents &amp; Payments</div>
+        </div>
+        <div class="panel-body">
+          <div class="row"><div class="row-body"><div class="row-name">E-signature</div><div class="row-meta">Route documents for signature before or after the visit</div></div><span class="tag muted">Available</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">Cloud document storage</div><div class="row-meta">Google Drive / Dropbox sync for signed and pending files</div></div><span class="tag muted">Available</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">Invoicing &amp; client payments</div><div class="row-meta">Bill clients directly from the booking or placement record</div></div><span class="tag muted">Available</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">Roster payouts</div><div class="row-meta">Pay field notaries and VAs straight from completed work</div></div><span class="tag muted">Available</span></div>
+        </div>
+
+        <div style="padding:14px 20px 4px; border-top:1px solid var(--line);">
+          <div class="stat-label" style="margin-bottom:0;">Marketing &amp; Leads</div>
+        </div>
+        <div class="panel-body">
+          <div class="row"><div class="row-body"><div class="row-name">Google Ads conversion tracking</div><div class="row-meta">See which keywords and campaigns actually book, not just click</div></div><span class="tag muted">Available</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">Website booking widget</div><div class="row-meta">Embed a real booking form directly on your own site</div></div><span class="tag muted">Available</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">Review &amp; reputation tracking</div><div class="row-meta">Google / Yelp reviews requested automatically after each job</div></div><span class="tag muted">Available</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">Referral link tracking</div><div class="row-meta">Attribute personal/referral leads to the person who sent them</div></div><span class="tag muted">Available</span></div>
+        </div>
+
+        <div style="padding:14px 20px 4px; border-top:1px solid var(--line);">
+          <div class="stat-label" style="margin-bottom:0;">Operations &amp; Data</div>
+        </div>
+        <div class="panel-body">
+          <div class="row"><div class="row-body"><div class="row-name">Calendar sync</div><div class="row-meta">Field notary schedules sync automatically with Google / Outlook</div></div><span class="tag gold">Demo-Only</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">QuickBooks / accounting sync</div><div class="row-meta">Revenue and payouts flow straight into the books</div></div><span class="tag muted">Available</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">Background check / vetting provider</div><div class="row-meta">Runs the actual inspection behind the "vetted" badge, not just a label</div></div><span class="tag muted">Available</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">Zapier / custom webhooks</div><div class="row-meta">Connect anything else you're already running</div></div><span class="tag muted">Available</span></div>
+          <div class="row"><div class="row-body"><div class="row-name">Installable mobile app (PWA)</div><div class="row-meta">Field notaries get today's jobs on their phone, no app store needed</div></div><span class="tag muted">Available</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">The same engine also runs</div></div>
+        <div class="panel-body pad" style="font-size:13.5px; color:var(--text-dim); line-height:1.75;">
+          <p style="margin-bottom:8px;">— Route and inventory scheduling for beverage distributors</p>
+          <p style="margin-bottom:8px;">— Service scheduling and chemical-log tracking for pool service operators</p>
+          <p>— Compliance and wholesale-order tracking for regulated retail</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ============ NEW NOTARY BOOKING MODAL ============ -->
+<div class="modal-overlay" id="booking-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">New notary booking</div>
+      <span class="modal-close" onclick="closeModal('booking-modal')">&times;</span>
+    </div>
+    <form id="booking-form" onsubmit="submitBooking(event)">
+      <div class="form-grid">
+        <div class="full"><label for="booking-client">Client name</label><input type="text" id="booking-client" name="client" required></div>
+        <div><label for="booking-phone">Phone</label><input type="tel" id="booking-phone" name="phone" required></div>
+        <div><label for="booking-docType">Document type</label><input type="text" id="booking-docType" name="docType" placeholder="Loan signing, apostille, RON, I-9, etc." required></div>
+        <div class="full"><label for="booking-address">Service address</label><input type="text" id="booking-address" name="address" required></div>
+        <div><label for="booking-date">Requested date</label><input type="date" id="booking-date" name="date" required></div>
+        <div><label for="booking-time">Requested time</label><input type="time" id="booking-time" name="time" required></div>
+        <div class="full"><label for="booking-source">Lead source</label>
+          <select id="booking-source" name="source">
+            <option>Google Ads</option>
+            <option>Referral</option>
+            <option>Repeat client</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="full"><label for="booking-notes">Notes</label><textarea id="booking-notes" name="notes" rows="4"></textarea></div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn ghost" onclick="closeModal('booking-modal')">Cancel</button>
+        <button type="submit" class="btn primary">Create booking</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ NEW VA REQUEST MODAL ============ -->
+<div class="modal-overlay" id="va-request-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">New VA client request</div>
+      <span class="modal-close" onclick="closeModal('va-request-modal')">&times;</span>
+    </div>
+    <form id="va-request-form" onsubmit="submitVaRequest(event)">
+      <div class="form-grid">
+        <div class="full"><label for="va-client">Client / business name</label><input type="text" id="va-client" name="client" required></div>
+        <div><label for="va-skills">Skills needed</label><input type="text" id="va-skills" name="skills" placeholder="Bookkeeping, CS, EA..." required></div>
+        <div><label for="va-hours">Hours / week</label><input type="text" id="va-hours" name="hours" placeholder="20 hrs/wk" required></div>
+        <div><label for="va-budget">Budget</label><input type="text" id="va-budget" name="budget" placeholder="$8/hr" required></div>
+        <div><label for="va-source">Lead source</label>
+          <select id="va-source" name="source">
+            <option>Referral</option>
+            <option>Personal outreach</option>
+            <option>Repeat client</option>
+            <option>Google Ads</option>
+          </select>
+        </div>
+        <div class="full"><label for="va-notes">Notes</label><textarea id="va-notes" name="notes" rows="4"></textarea></div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn ghost" onclick="closeModal('va-request-modal')">Cancel</button>
+        <button type="submit" class="btn primary">Create request</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ ADD PERSON MODAL (notary or VA) ============ -->
+<div class="modal-overlay" id="person-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="person-modal-title">Add to roster</div>
+      <span class="modal-close" onclick="closeModal('person-modal')">&times;</span>
+    </div>
+    <form id="person-form" onsubmit="submitPerson(event)">
+      <input type="hidden" name="type" id="person-type">
+      <div class="form-grid">
+        <div class="full"><label for="person-name">Full name</label><input type="text" id="person-name" name="name" required></div>
+        <div><label id="person-skill-label" for="person-skillField">Service area / county</label><input type="text" id="person-skillField" name="skillField" required></div>
+        <div><label for="person-phone">Phone</label><input type="tel" id="person-phone" name="phone" required></div>
+        <div class="full"><label for="person-vetted">Vetting status</label>
+          <select id="person-vetted" name="vetted">
+            <option value="1">Passed inspection — vetted</option>
+            <option value="0">Pending review</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn ghost" onclick="closeModal('person-modal')">Cancel</button>
+        <button type="submit" class="btn primary">Add to roster</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ DETAIL MODAL (booking or VA request "file") ============ -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal" style="max-width: 640px;">
+    <div class="modal-head">
+      <div>
+        <div class="page-subtitle" id="detail-subtitle" style="margin-bottom:2px;"></div>
+        <div class="modal-title" id="detail-title"></div>
+      </div>
+      <span class="modal-close" onclick="closeModal('detail-modal')">&times;</span>
+    </div>
+
+    <div id="detail-fields" style="margin-bottom: 18px;"></div>
+
+    <div style="border-top: 1px solid var(--line); padding-top: 16px; padding-bottom: 16px;">
+      <div class="panel-title" style="margin-bottom: 10px;">Copilot drafts</div>
+      <div id="detail-draft-actions" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+      <div id="detail-draft-box"></div>
+    </div>
+
+    <div style="border-top: 1px solid var(--line); padding-top: 16px;">
+      <div class="panel-title" style="margin-bottom: 12px;">Notes</div>
+      <div id="detail-notes" style="margin-bottom: 14px;"></div>
+      <form id="add-note-form" onsubmit="submitNote(event)">
+        <div class="form-grid">
+          <div><label for="note-author">Your name</label><input type="text" id="note-author" placeholder="e.g. Alex, or your name" required></div>
+          <div class="full"><label for="note-text">Note</label><textarea id="note-text" rows="5" placeholder="Add what you know — a call update, a client preference, anything the next person should see." required></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Add note</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ASSIGNMENT PICKER MODAL ============ -->
+<div class="modal-overlay" id="assign-modal">
+  <div class="modal" style="max-width: 460px;">
+    <div class="modal-head">
+      <div class="modal-title" id="assign-modal-title">Assign to</div>
+      <span class="modal-close" onclick="closeModal('assign-modal')">&times;</span>
+    </div>
+    <div id="assign-modal-list"></div>
+  </div>
+</div>
+
+<!-- ============ PROFILE SWITCHER MODAL ============ -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal" style="max-width: 420px;">
+    <div class="modal-head">
+      <div class="modal-title">Switch profile</div>
+      <span class="modal-close" onclick="closeModal('profile-modal')">&times;</span>
+    </div>
+    <p style="font-size:12.5px; color:var(--text-mute); margin-bottom:14px;">Each role sees a different slice of the same system — a field notary only sees their own jobs, a dispatcher only sees the notary side, and so on.</p>
+    <div id="profile-modal-list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ============ SEED / STATE ============
+  const STORE_KEY = 'vetted-cockpit-v1';
+
+  function relDate(offsetDays) {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    return d.toISOString().slice(0, 10);
+  }
+
+  const seed = {
+    notaryBookings: [
+      { id: 'b1', client: 'Marcus Webb', phone: '(210) 555-0142', docType: 'Loan signing — refinance', address: '4210 Broadway, San Antonio, TX', date: relDate(0), time: '14:00', source: 'Google Ads', status: 'unassigned', assignee: null, notes: [
+        { author: 'Intake', text: 'Client works late, prefers after 1pm.', at: '2026-07-15 3:20 PM' },
+      ] },
+      { id: 'b2', client: 'Priya Chandran', phone: '(210) 555-0198', docType: 'Power of attorney', address: '812 Blanco Rd, San Antonio, TX', date: relDate(0), time: '16:30', source: 'Referral', status: 'unassigned', assignee: null, notes: [] },
+      { id: 'b3', client: 'David Nguyen', phone: '(210) 555-0177', docType: 'Real estate closing', address: '2200 Alamo Heights Blvd, San Antonio, TX', date: relDate(1), time: '10:00', source: 'Google Ads', status: 'assigned', assignee: 'Rosa Delgado', notes: [
+        { author: 'Dispatch (Grace T.)', text: 'Client confirmed address by phone. Gate code is 4521 — call box says "Nguyen." Please arrive 5 min early, parking is tight.', at: '2026-07-16 9:05 AM' },
+        { author: 'Rosa Delgado (field notary)', text: 'Confirmed with client directly, all set for Friday 10am. Bringing extra copies per his request.', at: '2026-07-16 11:40 AM' },
+      ] },
+      { id: 'b4', client: 'Karen Boyle', phone: '(210) 555-0113', docType: 'Affidavit', address: '900 E Sonterra Blvd, San Antonio, TX', date: relDate(-1), time: '09:00', source: 'Repeat client', status: 'completed', assignee: 'James Whitfield', notes: [
+        { author: 'Intake', text: 'Repeat client, 3rd booking.', at: '2026-07-14 6:12 PM' },
+      ] },
+      { id: 'b5', client: 'Tom Escamilla', phone: '(210) 555-0165', docType: 'Vehicle title transfer', address: '5100 Fredericksburg Rd, San Antonio, TX', date: relDate(-1), time: '11:30', source: 'Google Ads', status: 'completed', assignee: 'Rosa Delgado', notes: [] },
+      { id: 'b6', client: 'Sofia Marchetti', phone: '(210) 555-0189', docType: 'Apostille — international adoption documents', address: '3300 N St Mary\'s St, San Antonio, TX', date: relDate(2), time: '13:00', source: 'Referral', status: 'unassigned', assignee: null, notes: [
+        { author: 'Intake', text: 'Documents need to be routed to the TX Secretary of State for apostille after notarization — client understands the extra turnaround.', at: '2026-07-16 4:45 PM' },
+      ] },
+      { id: 'b7', client: 'Denise Coleman', phone: '(720) 555-0224', docType: 'Remote Online Notary (RON) — I-9 employment verification', address: 'Remote video session — client in Denver, CO', date: relDate(1), time: '15:30', source: 'Google Ads', status: 'assigned', assignee: 'Deborah Ríos', notes: [
+        { author: 'Dispatch (Grace T.)', text: 'Out-of-state client, booked through the RON platform. No travel needed — confirmed ID verification requirements with client in advance.', at: '2026-07-16 2:10 PM' },
+      ] },
+    ],
+    vaRequests: [
+      { id: 'v1', client: 'Coastline Roofing', skills: 'Bookkeeping + AR/AP', hours: '20 hrs/wk', budget: '$9/hr', source: 'Referral', status: 'requested', assignee: null, notes: [] },
+      { id: 'v2', client: 'Dr. Lena Ortiz, DDS', skills: 'Executive assistant / scheduling', hours: '30 hrs/wk', budget: '$11/hr', source: 'Personal outreach', status: 'matched', assignee: 'Grace Villanueva', notes: [] },
+      { id: 'v3', client: 'Boerne Realty Group', skills: 'Customer support + CRM', hours: '15 hrs/wk', budget: '$8/hr', source: 'Repeat client', status: 'interviewing', assignee: 'Miguel Santos', notes: [
+        { author: 'Account Manager', text: '2nd interview scheduled for Thursday, client wants to confirm CRM experience specifically.', at: '2026-07-15 2:00 PM' },
+      ] },
+      { id: 'v4', client: 'Alamo Fitness Studio', skills: 'Social media + email marketing', hours: '10 hrs/wk', budget: '$10/hr', source: 'Referral', status: 'placed', assignee: 'Bea Fernandez', notes: [
+        { author: 'Account Manager', text: 'Placed 3 weeks ago, going well. Client asked about adding 5 more hours/week starting August.', at: '2026-07-10 10:30 AM' },
+      ] },
+    ],
+    notaryRoster: [
+      { id: 'n1', name: 'Rosa Delgado', field: 'Bexar County', phone: '(210) 555-0301', vetted: true },
+      { id: 'n2', name: 'James Whitfield', field: 'Bexar / Comal County', phone: '(210) 555-0322', vetted: true },
+      { id: 'n3', name: 'Alicia Moreno', field: 'Guadalupe County', phone: '(210) 555-0344', vetted: true },
+      { id: 'n4', name: 'Ben Castellanos', field: 'Bexar County', phone: '(210) 555-0355', vetted: true },
+      { id: 'n5', name: 'Faith Okonkwo', field: 'Kendall County', phone: '(210) 555-0367', vetted: true },
+      { id: 'n6', name: 'Harold Kim', field: 'Bexar County', phone: '(210) 555-0378', vetted: false },
+      { id: 'n7', name: 'Deborah Ríos', field: 'Bexar / Medina County', phone: '(210) 555-0390', vetted: true },
+    ],
+    vaRoster: [
+      { id: 'a1', name: 'Grace Villanueva', field: 'Executive assistant, scheduling', phone: '(210) 555-0412', vetted: true },
+      { id: 'a2', name: 'Miguel Santos', field: 'Customer support, CRM', phone: '(210) 555-0434', vetted: true },
+      { id: 'a3', name: 'Bea Fernandez', field: 'Social media, email marketing', phone: '(210) 555-0456', vetted: true },
+      { id: 'a4', name: 'Noel Reyes', field: 'Bookkeeping, AR/AP', phone: '(210) 555-0478', vetted: false },
+      { id: 'a5', name: 'Nadia Cruz', field: 'Bookkeeping, AR/AP, invoicing', phone: '(210) 555-0491', vetted: true },
+    ],
+    leads: [
+      { id: 'l1', name: 'Marcus Webb', channel: 'Google Ads', business: 'Notary', date: relDate(-1), status: 'Booked' },
+      { id: 'l2', name: 'Priya Chandran', channel: 'Referral', business: 'Notary', date: relDate(-1), status: 'Booked' },
+      { id: 'l3', name: 'Coastline Roofing', channel: 'Referral', business: 'VA Staffing', date: relDate(-2), status: 'Requested' },
+      { id: 'l4', name: 'Sandra Ellis', channel: 'Google Ads', business: 'Notary', date: relDate(-2), status: 'Quoted' },
+      { id: 'l5', name: 'Boerne Realty Group', channel: 'Personal outreach', business: 'VA Staffing', date: relDate(-3), status: 'Interviewing' },
+      { id: 'l6', name: 'Frank Delgado', channel: 'Google Ads', business: 'Notary', date: relDate(-3), status: 'No response' },
+    ],
+    inbox: [
+      { id: 'e1', to: 'david.nguyen@email.com', subject: 'Your mobile notary is confirmed — Rosa Delgado, Friday 10:00 AM', sentAt: '2026-07-16 9:10 AM' },
+      { id: 'e2', to: 'lena.ortiz@dentaloffice.com', subject: 'Meet your matched VA — Grace Villanueva', sentAt: '2026-07-13 11:05 AM' },
+      { id: 'e3', to: 'karen.boyle@email.com', subject: 'Notary visit completed — receipt attached', sentAt: '2026-07-15 9:40 AM' },
+    ],
+    documents: [
+      { id: 'd1', name: 'Boyle — Affidavit (signed).pdf', linkedTo: 'Karen Boyle · b4', received: '2026-07-15', status: 'Filed' },
+      { id: 'd2', name: 'Escamilla — Title transfer (signed).pdf', linkedTo: 'Tom Escamilla · b5', received: '2026-07-15', status: 'Filed' },
+      { id: 'd3', name: 'Nguyen — Closing packet (pending signature).pdf', linkedTo: 'David Nguyen · b3', received: '2026-07-14', status: 'Awaiting signature' },
+    ],
+    scoutContacted: {},
+  };
+
+  function migrateNotes(list) {
+    (list || []).forEach(r => {
+      if (typeof r.notes === 'string') {
+        r.notes = r.notes ? [{ author: 'Intake', text: r.notes, at: '' }] : [];
+      } else if (!Array.isArray(r.notes)) {
+        r.notes = [];
+      }
+    });
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Defensively backfill any top-level key missing from an older saved
+        // snapshot (e.g. a schema field added after Alex's first visit) so a
+        // stale localStorage entry can't null out a whole section on reload.
+        Object.keys(seed).forEach(key => {
+          if (parsed[key] === undefined || parsed[key] === null) {
+            parsed[key] = JSON.parse(JSON.stringify(seed[key]));
+          }
+        });
+        migrateNotes(parsed.notaryBookings);
+        migrateNotes(parsed.vaRequests);
+        return parsed;
+      }
+    } catch (e) {}
+    return JSON.parse(JSON.stringify(seed));
+  }
+  function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+
+  let state = loadState();
+
+  // ============ PROFILES (role-based view switching) ============
+  const PROFILES = [
+    { id: 'alex', name: 'Alex', role: 'Owner', avatar: 'A', visibleSections: ['core', 'myjobs', 'notary', 'va', 'growth', 'shared', 'platform'], landOn: 'dashboard' },
+    { id: 'dispatch', name: 'Grace T.', role: 'Dispatch Coordinator', avatar: 'G', visibleSections: ['notary'], landOn: 'notary-bookings' },
+    { id: 'vamanager', name: 'Maria Santos', role: 'VA Account Manager', avatar: 'M', visibleSections: ['va'], landOn: 'va-requests' },
+    { id: 'notary-rosa', name: 'Rosa Delgado', role: 'Field Notary', avatar: 'R', visibleSections: ['myjobs'], landOn: 'my-jobs', rosterName: 'Rosa Delgado' },
+  ];
+  let currentProfileId = localStorage.getItem('alex-demo-profile') || 'alex';
+  if (!PROFILES.find(p => p.id === currentProfileId)) currentProfileId = 'alex';
+
+  function getCurrentProfile() {
+    return PROFILES.find(p => p.id === currentProfileId) || PROFILES[0];
+  }
+
+  function applyProfile() {
+    const p = getCurrentProfile();
+    document.getElementById('user-avatar').textContent = p.avatar;
+    document.getElementById('user-name').textContent = p.name;
+    document.querySelectorAll('.nav-section[data-section]').forEach(sec => {
+      sec.style.display = p.visibleSections.includes(sec.dataset.section) ? '' : 'none';
+    });
+  }
+
+  function openProfileSwitcher() {
+    const box = document.getElementById('profile-modal-list');
+    box.innerHTML = PROFILES.map(p => `
+      <div class="row clickable" onclick="switchProfile('${p.id}')">
+        <div class="user-avatar" style="flex-shrink:0;">${p.avatar}</div>
+        <div class="row-body">
+          <div class="row-name">${p.name}</div>
+          <div class="row-meta">${p.role}</div>
+        </div>
+        ${p.id === currentProfileId ? '<span class="tag emerald">Current</span>' : ''}
+      </div>
+    `).join('');
+    openModal('profile-modal');
+  }
+
+  function switchProfile(profileId) {
+    currentProfileId = profileId;
+    localStorage.setItem('alex-demo-profile', profileId);
+    applyProfile();
+    closeModal('profile-modal');
+    const p = getCurrentProfile();
+    toast(`Switched to ${p.name} — ${p.role}`);
+    navigate(p.landOn);
+  }
+
+  // ============ NAVIGATION ============
+  function navigate(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + viewId));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === viewId));
+    renderAll();
+  }
+  document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => navigate(n.dataset.view)));
+
+  function esc(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function nowStamp() {
+    return new Date().toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+
+  // ============ TOAST ============
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  // ============ MODALS ============
+  function openModal(id) { document.getElementById(id).classList.add('active'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('active'); document.querySelector('#' + id + ' form')?.reset(); }
+  function openBookingModal() { openModal('booking-modal'); }
+  function openVaRequestModal() { openModal('va-request-modal'); }
+  function openPersonModal(type) {
+    document.getElementById('person-type').value = type;
+    document.getElementById('person-modal-title').textContent = type === 'notary' ? 'Add field notary' : 'Add VA candidate';
+    document.getElementById('person-skill-label').textContent = type === 'notary' ? 'Service area / county' : 'Core skills';
+    openModal('person-modal');
+  }
+
+  // ============ DETAIL / "FILE" MODAL ============
+  let detailContext = null; // { type: 'notary' | 'va', id }
+
+  function openDetail(type, id) {
+    detailContext = { type, id };
+    renderDetail();
+    openModal('detail-modal');
+  }
+
+  function getDetailRecord() {
+    if (!detailContext) return null;
+    const list = detailContext.type === 'notary' ? state.notaryBookings : state.vaRequests;
+    return list.find(r => r.id === detailContext.id) || null;
+  }
+
+  function renderDetail() {
+    const r = getDetailRecord();
+    if (!r) return;
+    const isNotary = detailContext.type === 'notary';
+
+    document.getElementById('detail-subtitle').textContent = isNotary ? 'Mobile Notary Booking' : 'VA Client Request';
+    document.getElementById('detail-title').textContent = r.client;
+
+    const fieldRows = isNotary ? [
+      ['Phone', esc(r.phone)],
+      ['Document type', esc(r.docType)],
+      ['Address', esc(r.address)],
+      ['Requested', `${esc(r.date)} · ${esc(r.time)}`],
+      ['Source', esc(r.source)],
+      ['Status', statusTag(r.status)],
+      ['Assigned to', r.assignee ? esc(r.assignee) : '<span style="color:var(--text-mute);">Not yet assigned</span>'],
+    ] : [
+      ['Skills needed', esc(r.skills)],
+      ['Hours / week', esc(r.hours)],
+      ['Budget', esc(r.budget)],
+      ['Source', esc(r.source)],
+      ['Status', statusTag(r.status)],
+      ['Matched to', r.assignee ? esc(r.assignee) : '<span style="color:var(--text-mute);">Not yet matched</span>'],
+    ];
+
+    document.getElementById('detail-fields').innerHTML = fieldRows.map(([label, val]) => `
+      <div class="row">
+        <div class="row-lead" style="width:120px;">${label}</div>
+        <div class="row-body"><div class="row-name" style="font-weight:500;">${val}</div></div>
+      </div>
+    `).join('');
+
+    const notesBox = document.getElementById('detail-notes');
+    notesBox.innerHTML = r.notes.length ? r.notes.map(n => `
+      <div class="row">
+        <div class="row-body">
+          <div class="row-name">${esc(n.author)}</div>
+          <div class="row-meta">${esc(n.text)}</div>
+          <div class="row-meta" style="margin-top:2px; color:var(--text-mute);">${esc(n.at)}</div>
+        </div>
+      </div>
+    `).join('') : '<div class="empty">No notes yet — be the first to add one.</div>';
+
+    document.getElementById('note-author').value = '';
+    document.getElementById('note-text').value = '';
+
+    renderDraftActions();
+  }
+
+  // ============ COPILOT MESSAGE DRAFTING ============
+  function renderDraftActions() {
+    const r = getDetailRecord();
+    const actionsBox = document.getElementById('detail-draft-actions');
+    document.getElementById('detail-draft-box').innerHTML = '';
+    if (!r || !actionsBox) return;
+    const isNotary = detailContext.type === 'notary';
+    const buttons = [`<button type="button" class="btn sm ghost" onclick="showDraft('client')">Draft client message</button>`];
+    if (r.assignee) buttons.push(`<button type="button" class="btn sm ghost" onclick="showDraft('assignee')">Draft ${isNotary ? 'notary' : 'candidate'} message</button>`);
+    actionsBox.innerHTML = buttons.join('');
+  }
+
+  function buildDraftText(kind) {
+    const r = getDetailRecord();
+    if (!r) return '';
+    const isNotary = detailContext.type === 'notary';
+    const lastNote = r.notes.length ? r.notes[r.notes.length - 1].text : '';
+    if (isNotary) {
+      if (kind === 'client') {
+        return r.status === 'unassigned'
+          ? `Hi ${r.client}, thanks for booking with us. We're lining up a vetted notary for your ${r.docType} on ${r.date} at ${r.time} and will confirm who's coming shortly.`
+          : `Hi ${r.client}, confirming your ${r.docType} on ${r.date} at ${r.time} at ${r.address}. Your notary is ${r.assignee}. Reply here with any questions before then.`;
+      }
+      return `Hi ${r.assignee}, you're assigned: ${r.client}, ${r.docType}, ${r.date} at ${r.time}, ${r.address}. Client phone: ${r.phone}.${lastNote ? ' Note: ' + lastNote : ''}`;
+    }
+    if (kind === 'client') {
+      return r.assignee
+        ? `Hi, following up on your request for ${r.skills} (${r.hours}) — we've matched you with ${r.assignee}. Let us know a good time to connect.`
+        : `Hi, thanks for reaching out about ${r.skills} (${r.hours}). We're reviewing vetted candidates now and will follow up shortly with a match.`;
+    }
+    return `Hi ${r.assignee}, we have a potential placement: ${r.client}, needs ${r.skills}, ${r.hours}, budget ${r.budget}. Let us know if you're interested.`;
+  }
+
+  function showDraft(kind) {
+    const text = buildDraftText(kind);
+    const box = document.getElementById('detail-draft-box');
+    box.innerHTML = `
+      <div class="draft-box">
+        <textarea id="draft-text-area" readonly>${esc(text)}</textarea>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn sm primary" onclick="copyDraft()">Copy text</button>
+          <button type="button" class="btn sm ghost" onclick="emailDraft()">Open in email</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function copyDraft() {
+    const ta = document.getElementById('draft-text-area');
+    if (!ta) return;
+    ta.select();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(ta.value).then(() => toast('Copied to clipboard')).catch(() => toast('Select the text to copy it manually'));
+    } else {
+      toast('Select the text to copy it manually');
+    }
+  }
+
+  function emailDraft() {
+    const ta = document.getElementById('draft-text-area');
+    if (!ta) return;
+    window.location.href = `mailto:?subject=${encodeURIComponent('Update on your request')}&body=${encodeURIComponent(ta.value)}`;
+  }
+
+  function submitNote(evt) {
+    evt.preventDefault();
+    const r = getDetailRecord();
+    if (!r) return;
+    const author = document.getElementById('note-author').value.trim();
+    const text = document.getElementById('note-text').value.trim();
+    if (!author || !text) return;
+    r.notes.push({ author, text, at: nowStamp() });
+    saveState();
+    renderDetail();
+    renderAll();
+    toast('Note added');
+  }
+
+  function submitBooking(evt) {
+    evt.preventDefault();
+    const f = new FormData(evt.target);
+    const id = 'b' + Date.now();
+    const initialNote = f.get('notes');
+    state.notaryBookings.unshift({
+      id, client: f.get('client'), phone: f.get('phone'), docType: f.get('docType'),
+      address: f.get('address'), date: f.get('date'), time: f.get('time'),
+      source: f.get('source'), status: 'unassigned', assignee: null,
+      notes: initialNote ? [{ author: 'You', text: initialNote, at: nowStamp() }] : []
+    });
+    state.leads.unshift({ id: 'l' + Date.now(), name: f.get('client'), channel: f.get('source'), business: 'Notary', date: relDate(0), status: 'Booked' });
+    saveState();
+    closeModal('booking-modal');
+    toast('Booking created — awaiting assignment');
+    renderAll();
+  }
+
+  function submitVaRequest(evt) {
+    evt.preventDefault();
+    const f = new FormData(evt.target);
+    const id = 'v' + Date.now();
+    const vaInitialNote = f.get('notes');
+    state.vaRequests.unshift({
+      id, client: f.get('client'), skills: f.get('skills'), hours: f.get('hours'),
+      budget: f.get('budget'), source: f.get('source'), status: 'requested', assignee: null,
+      notes: vaInitialNote ? [{ author: 'You', text: vaInitialNote, at: nowStamp() }] : []
+    });
+    state.leads.unshift({ id: 'l' + Date.now(), name: f.get('client'), channel: f.get('source'), business: 'VA Staffing', date: relDate(0), status: 'Requested' });
+    saveState();
+    closeModal('va-request-modal');
+    toast('Client request logged');
+    renderAll();
+  }
+
+  function submitPerson(evt) {
+    evt.preventDefault();
+    const f = new FormData(evt.target);
+    const type = f.get('type');
+    const id = (type === 'notary' ? 'n' : 'a') + Date.now();
+    const rec = { id, name: f.get('name'), field: f.get('skillField'), phone: f.get('phone'), vetted: f.get('vetted') === '1' };
+    if (type === 'notary') state.notaryRoster.unshift(rec); else state.vaRoster.unshift(rec);
+    saveState();
+    closeModal('person-modal');
+    toast('Added to roster');
+    renderAll();
+  }
+
+  // ============ NOTARY SCOUT ============
+  const scoutTemplates = {
+    'Law Firm': {
+      names: ['Whitfield & Cross Law', 'Alamo Estate Law Group', 'Sonterra Family Law', 'Blanco Rd Legal Partners'],
+      why: 'Estate planning and POA documents need regular notarization — steady monthly volume, not one-off.',
+      streets: ['Broadway', 'Blanco Rd', 'Nacogdoches Rd'],
+    },
+    'Title & Escrow': {
+      names: ['Lone Star Title Co.', 'Alamo Heights Title & Escrow', 'Bexar County Title Group'],
+      why: 'Every closing needs a notary present — the highest-volume referral category there is.',
+      streets: ['Sonterra Blvd', 'Loop 1604', 'Fredericksburg Rd'],
+    },
+    'Real Estate Brokerage': {
+      names: ['Sonterra Realty Group', 'Boerne Hill Country Realty', 'Alamo City Real Estate'],
+      why: 'Agents refer clients directly for closing-adjacent paperwork — warm, repeat referral source.',
+      streets: ['Bitters Rd', 'Huebner Rd', 'Wurzbach Rd'],
+    },
+    'Mortgage Lender': {
+      names: ['Riverwalk Mortgage Partners', 'Texas Hill Country Lending', 'First San Antonio Mortgage'],
+      why: 'Loan signings are the single largest driver of mobile notary demand.',
+      streets: ['Vance Jackson Rd', 'Callaghan Rd', 'IH-10'],
+    },
+    'Senior Living': {
+      names: ['Cedar Springs Senior Living', 'Alamo Heights Assisted Living', 'Riverbend Hospice Care'],
+      why: 'Healthcare directives and POAs for residents — recurring, dignified work, easy relationship to keep.',
+      streets: ['Jones Maltsberger Rd', 'Thousand Oaks Dr', 'Redland Rd'],
+    },
+    'Financial Advisory': {
+      names: ['Sonterra Wealth Advisors', 'Alamo Financial Group', 'Blanco Capital Partners'],
+      why: 'Trust documents and account paperwork need periodic notarization for existing clients.',
+      streets: ['Stone Oak Pkwy', 'N Loop 1604 W', 'Lockhill Selma Rd'],
+    },
+  };
+
+  function hashSeed(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) >>> 0; }
+    return h;
+  }
+
+  function getScoutProspects(zip, category) {
+    const cats = category === 'all' ? Object.keys(scoutTemplates) : [category];
+    const results = [];
+    cats.forEach(cat => {
+      const tpl = scoutTemplates[cat];
+      const seed = hashSeed(zip + cat);
+      const count = category === 'all' ? 2 : 4;
+      for (let i = 0; i < count && i < tpl.names.length; i++) {
+        const idx = (seed + i) % tpl.names.length;
+        const street = tpl.streets[(seed + i) % tpl.streets.length];
+        const num = 1000 + ((seed + i * 137) % 8000);
+        const phone = `(210) 555-${String(2000 + ((seed + i * 91) % 900)).padStart(4, '0')}`;
+        results.push({
+          id: 'scout-' + zip + '-' + cat.replace(/\s+/g, '') + '-' + i,
+          name: tpl.names[idx],
+          category: cat,
+          address: `${num} ${street}, San Antonio, TX ${zip}`,
+          phone,
+          why: tpl.why,
+        });
+      }
+    });
+    return results;
+  }
+
+  const DEFAULT_SCOUT_ZIP = '78209';
+  let lastScoutQuery = null;
+
+  function renderScoutResultsPanel(zip, results) {
+    const panel = document.getElementById('scout-results-panel');
+    const title = document.getElementById('scout-results-title');
+    const box = document.getElementById('scout-results');
+    panel.style.display = 'block';
+    title.textContent = `${results.length} prospects near ${zip}`;
+
+    box.innerHTML = results.map(r => {
+      const contacted = !!state.scoutContacted[r.id];
+      return `
+        <div class="row">
+          <div class="row-body">
+            <div class="row-name">${esc(r.name)} <span class="tag muted" style="margin-left:6px;">${esc(r.category)}</span></div>
+            <div class="row-meta">${esc(r.address)} · ${esc(r.phone)}</div>
+            <div class="row-meta" style="margin-top:3px; font-style:italic;">${esc(r.why)}</div>
+          </div>
+          ${contacted
+            ? '<span class="tag emerald">Contacted</span>'
+            : `<button class="btn sm gold" onclick="draftOutreach('${r.id}', '${r.name.replace(/'/g, "\\'")}', '${r.category}')">Draft outreach</button>`}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function runScout(evt) {
+    evt.preventDefault();
+    const zip = document.getElementById('scout-zip').value.trim();
+    const category = document.getElementById('scout-category').value;
+    lastScoutQuery = { zip, category };
+    const results = getScoutProspects(zip, category);
+    renderScoutResultsPanel(zip, results);
+    window._scoutResults = results;
+  }
+
+  function draftOutreach(id, name, category) {
+    state.scoutContacted[id] = true;
+    saveState();
+    const subject = encodeURIComponent(`Mobile notary partnership — ${name}`);
+    const body = encodeURIComponent(
+      `Hi,\n\nWe work with businesses like yours (${category}) to provide reliable, vetted mobile notary service for your clients — same-day availability, licensed and background-checked notaries only.\n\nWould you be open to a quick call about setting up an ongoing referral relationship?\n\nThanks,\nAlex`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    toast('Marked contacted — draft opened');
+    if (lastScoutQuery) {
+      renderScoutResultsPanel(lastScoutQuery.zip, getScoutProspects(lastScoutQuery.zip, lastScoutQuery.category));
+    }
+    renderScoutTeaser();
+  }
+
+  function assignBooking(id) {
+    openAssignPicker('notary', id);
+  }
+
+  // ============ ASSIGNMENT PICKER (smart-ranked, real choice, not auto-random) ============
+  let assignContext = null; // { type: 'notary' | 'va', id }
+
+  function wordSet(str) {
+    return (str || '').toLowerCase().split(/[^a-z]+/).filter(Boolean);
+  }
+
+  function scoreNotaryCandidate(person, booking) {
+    const reasons = [];
+    let score = 0;
+    const activeJobs = activeBookingCount(person.name);
+    if (activeJobs === 0) { score += 3; reasons.push('No active jobs right now'); }
+    else { score -= activeJobs * 2; reasons.push(`${activeJobs} active job${activeJobs > 1 ? 's' : ''} already on the books`); }
+
+    const isRemote = /remote/i.test(booking.address);
+    if (isRemote) {
+      const priorRon = state.notaryBookings.some(b => b.assignee === person.name && /remote online notary/i.test(b.docType));
+      if (priorRon) { score += 5; reasons.push('Has handled Remote Online Notary sessions before'); }
+      else { reasons.push('No prior RON session on record'); }
+    } else {
+      const covers = /bexar/i.test(person.field);
+      if (covers) { score += 3; reasons.push(`Covers ${person.field}`); }
+      else { reasons.push(`Covers ${person.field} — outside the usual area`); }
+    }
+
+    const docCategory = (booking.docType || '').split(/[—-]/)[0].trim();
+    const priorSimilar = state.notaryBookings.filter(b => b.assignee === person.name && b.status === 'completed' && b.docType.split(/[—-]/)[0].trim().toLowerCase() === docCategory.toLowerCase()).length;
+    if (priorSimilar > 0) { score += priorSimilar * 2; reasons.push(`Completed ${priorSimilar} similar job${priorSimilar > 1 ? 's' : ''} before`); }
+
+    return { person, score, reasons };
+  }
+
+  function scoreVaCandidate(person, request) {
+    const reasons = [];
+    let score = 0;
+    const reqWords = wordSet(request.skills);
+    const fieldWords = wordSet(person.field);
+    const overlap = reqWords.filter(w => fieldWords.includes(w)).length;
+    if (overlap > 0) { score += overlap * 3; reasons.push(`Skill match: ${person.field}`); }
+    else { reasons.push(`Background: ${person.field}`); }
+
+    const activePipeline = activeVaCount(person.name);
+    if (activePipeline === 0) { score += 2; reasons.push('Not currently in another active match'); }
+    else { score -= activePipeline * 2; reasons.push(`${activePipeline} other active match${activePipeline > 1 ? 'es' : ''} in progress`); }
+
+    return { person, score, reasons };
+  }
+
+  function openAssignPicker(type, id) {
+    assignContext = { type, id };
+    const roster = type === 'notary' ? state.notaryRoster : state.vaRoster;
+    const record = type === 'notary' ? state.notaryBookings.find(b => b.id === id) : state.vaRequests.find(v => v.id === id);
+    const vetted = roster.filter(p => p.vetted);
+    document.getElementById('assign-modal-title').textContent = type === 'notary' ? 'Assign field notary' : 'Match VA candidate';
+
+    const ranked = vetted
+      .map(p => (type === 'notary' ? scoreNotaryCandidate(p, record) : scoreVaCandidate(p, record)))
+      .sort((a, b) => b.score - a.score);
+
+    const box = document.getElementById('assign-modal-list');
+    box.innerHTML = ranked.length ? `
+      <p style="font-size:12px; color:var(--text-mute); margin-bottom:12px;">Ranked by current workload and fit — you make the final call.</p>
+      ${ranked.map((r, i) => `
+        <div class="match-card ${i === 0 ? 'best' : ''}" onclick="confirmAssign('${r.person.id}')">
+          <div class="row" style="border:none; padding:0;">
+            <div class="row-body">
+              <div class="row-name">${esc(r.person.name)} ${i === 0 ? '<span class="tag gold">Best match</span>' : ''}</div>
+            </div>
+            <span class="tag muted">Select</span>
+          </div>
+          <div class="match-reasons">${r.reasons.map(reason => `<span class="match-reason">${esc(reason)}</span>`).join('')}</div>
+        </div>
+      `).join('')}
+    ` : '<div class="empty">No vetted people on the roster yet — add one first.</div>';
+    openModal('assign-modal');
+  }
+
+  function confirmAssign(personId) {
+    if (!assignContext) return;
+    const roster = assignContext.type === 'notary' ? state.notaryRoster : state.vaRoster;
+    const person = roster.find(p => p.id === personId);
+    if (!person) return;
+    if (assignContext.type === 'notary') {
+      const b = state.notaryBookings.find(x => x.id === assignContext.id);
+      if (!b) return;
+      b.status = 'assigned';
+      b.assignee = person.name;
+    } else {
+      const v = state.vaRequests.find(x => x.id === assignContext.id);
+      if (!v) return;
+      v.status = 'matched';
+      v.assignee = person.name;
+    }
+    saveState();
+    closeModal('assign-modal');
+    toast('Assigned to ' + person.name);
+    renderAll();
+  }
+  function completeBooking(id) {
+    const b = state.notaryBookings.find(x => x.id === id);
+    if (!b) return;
+    b.status = 'completed';
+    saveState();
+    toast('Marked complete');
+    renderAll();
+  }
+
+  function advanceVa(id) {
+    const v = state.vaRequests.find(x => x.id === id);
+    if (!v) return;
+    const order = ['requested', 'matched', 'interviewing', 'placed'];
+    const i = order.indexOf(v.status);
+    if (i >= order.length - 1) return;
+    const nextStatus = order[i + 1];
+    if (nextStatus === 'matched' && !v.assignee) {
+      openAssignPicker('va', id);
+      return;
+    }
+    v.status = nextStatus;
+    saveState();
+    toast('Request moved to ' + v.status);
+    renderAll();
+  }
+
+  // ============ RENDER ============
+  function statusTag(status) {
+    const map = {
+      unassigned: '<span class="tag amber">Unassigned</span>',
+      assigned: '<span class="tag primary">Assigned</span>',
+      completed: '<span class="tag emerald">Completed</span>',
+      requested: '<span class="tag amber">Requested</span>',
+      matched: '<span class="tag primary">Matched</span>',
+      interviewing: '<span class="tag gold">Interviewing</span>',
+      placed: '<span class="tag emerald">Placed</span>',
+    };
+    return map[status] || '<span class="tag muted">' + status + '</span>';
+  }
+
+  function renderDashboard() {
+    const open = state.notaryBookings.filter(b => b.status !== 'completed');
+    const unassignedCount = state.notaryBookings.filter(b => b.status === 'unassigned').length;
+    document.getElementById('stat-notary-open').textContent = open.length;
+    document.getElementById('stat-notary-unassigned-note').textContent = `${unassignedCount} unassigned right now`;
+
+    const vettedNotaries = state.notaryRoster.filter(n => n.vetted).length;
+    const vettedVAs = state.vaRoster.filter(a => a.vetted).length;
+    document.getElementById('stat-roster-size').textContent = vettedNotaries + vettedVAs;
+    document.getElementById('stat-roster-breakdown').textContent = `${vettedNotaries} notaries · ${vettedVAs} VAs`;
+
+    const placedCount = state.vaRequests.filter(v => v.status === 'placed').length;
+    document.getElementById('stat-va-total').textContent = state.vaRequests.length;
+    document.getElementById('stat-va-delta').textContent = `${placedCount} placed · ${state.vaRequests.length - placedCount} in progress`;
+
+    const leadStats = computeLeadStats();
+    document.getElementById('stat-leads-7d').textContent = leadStats.total;
+    document.getElementById('stat-leads-7d-delta').textContent = `${leadStats.google} Google · ${leadStats.other} referral`;
+    renderChannelBars('dash-channel-bars');
+
+    const dashNotary = document.getElementById('dash-notary-list');
+    const unassigned = state.notaryBookings.filter(b => b.status === 'unassigned').slice(0, 4);
+    dashNotary.innerHTML = unassigned.length ? unassigned.map(b => `
+      <div class="row clickable" onclick="openDetail('notary','${b.id}')">
+        <div class="row-lead">${b.date.slice(5)} ${b.time}</div>
+        <div class="row-body">
+          <div class="row-name">${esc(b.client)} — ${esc(b.docType)} ${b.date <= relDate(0) ? '<span class="tag red">Needs attention</span>' : ''}</div>
+          <div class="row-meta">${esc(b.address)}</div>
+        </div>
+        <button class="btn sm gold" onclick="event.stopPropagation(); assignBooking('${b.id}')">Assign</button>
+      </div>
+    `).join('') : '<div class="empty">Nothing waiting on assignment.</div>';
+
+    const dashVa = document.getElementById('dash-va-list');
+    const inProgress = state.vaRequests.filter(v => v.status !== 'placed').slice(0, 4);
+    dashVa.innerHTML = inProgress.length ? inProgress.map(v => `
+      <div class="row clickable" onclick="openDetail('va','${v.id}')">
+        <div class="row-lead">${esc(v.hours)}</div>
+        <div class="row-body">
+          <div class="row-name">${esc(v.client)} — ${esc(v.skills)}</div>
+          <div class="row-meta">${v.assignee ? 'Candidate: ' + esc(v.assignee) : 'Not yet matched'} · ${esc(v.budget)}</div>
+        </div>
+        ${statusTag(v.status)}
+      </div>
+    `).join('') : '<div class="empty">No active requests.</div>';
+
+    renderCopilotBriefing();
+    renderScoutTeaser();
+  }
+
+  // ============ SCOUT TEASER (surfaced on dashboard, not buried in its own page) ============
+  function getTeaserProspects(zip) {
+    // getScoutProspects('all') packs results in fixed category order (2 per
+    // category), so a naive slice(0,2) would always show the same category
+    // (Law Firm) forever. Pick two DIFFERENT categories deterministically so
+    // the teaser actually shows the range Scout covers.
+    const cats = Object.keys(scoutTemplates);
+    const seed = hashSeed(zip);
+    const catA = cats[seed % cats.length];
+    let catBIdx = (seed + 1) % cats.length;
+    if (cats[catBIdx] === catA) catBIdx = (catBIdx + 1) % cats.length;
+    const catB = cats[catBIdx];
+    return [catA, catB].map(cat => getScoutProspects(zip, cat)[0]).filter(Boolean);
+  }
+
+  function renderScoutTeaser() {
+    const box = document.getElementById('dash-scout-teaser');
+    if (!box) return;
+    const prospects = getTeaserProspects(DEFAULT_SCOUT_ZIP);
+    box.innerHTML = `
+      <p style="font-size:12.5px; color:var(--text-mute); margin-bottom:10px;">Copilot already ran a Scout pass near ${esc(DEFAULT_SCOUT_ZIP)} — these are the kind of referral partners it surfaces automatically, before you even ask.</p>
+      ${prospects.map(r => {
+        const contacted = !!state.scoutContacted[r.id];
+        return `
+        <div class="row">
+          <div class="row-body">
+            <div class="row-name">${esc(r.name)} <span class="tag muted" style="margin-left:6px;">${esc(r.category)}</span></div>
+            <div class="row-meta">${esc(r.address)}</div>
+          </div>
+          ${contacted
+            ? '<span class="tag emerald">Contacted</span>'
+            : `<button class="btn sm gold" onclick="draftOutreach('${r.id}', '${r.name.replace(/'/g, "\\'")}', '${r.category}')">Draft outreach</button>`}
+        </div>
+      `;
+      }).join('')}
+    `;
+    updateScoutBadge();
+  }
+
+  function updateScoutBadge() {
+    const badge = document.getElementById('badge-notary-scout');
+    if (!badge) return;
+    const prospects = getScoutProspects(DEFAULT_SCOUT_ZIP, 'all');
+    const uncontacted = prospects.filter(r => !state.scoutContacted[r.id]).length;
+    if (uncontacted > 0) {
+      badge.textContent = uncontacted + ' new';
+      badge.style.display = '';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // ============ COPILOT BRIEFING (computed insights, not a static blurb) ============
+  function activeBookingCount(name) {
+    return state.notaryBookings.filter(b => b.assignee === name && b.status === 'assigned').length;
+  }
+  function activeVaCount(name) {
+    return state.vaRequests.filter(v => v.assignee === name && (v.status === 'matched' || v.status === 'interviewing')).length;
+  }
+
+  function renderCopilotBriefing() {
+    const today = relDate(0);
+    const tomorrow = relDate(1);
+    const items = [];
+
+    const urgentToday = state.notaryBookings.filter(b => b.status === 'unassigned' && b.date <= today);
+    if (urgentToday.length) {
+      items.push({
+        level: 'urgent',
+        title: `${urgentToday.length} booking${urgentToday.length > 1 ? 's' : ''} today with no notary assigned`,
+        meta: urgentToday.map(b => b.client).join(', '),
+        action: () => openAssignPicker('notary', urgentToday[0].id),
+        actionLabel: 'Assign now',
+      });
+    }
+
+    const urgentTomorrow = state.notaryBookings.filter(b => b.status === 'unassigned' && b.date === tomorrow);
+    if (urgentTomorrow.length) {
+      items.push({
+        level: 'watch',
+        title: `${urgentTomorrow.length} booking${urgentTomorrow.length > 1 ? 's' : ''} tomorrow still need a notary`,
+        meta: urgentTomorrow.map(b => b.client).join(', '),
+        action: () => openDetail('notary', urgentTomorrow[0].id),
+        actionLabel: 'Review',
+      });
+    }
+
+    const staleVa = state.vaRequests.filter(v => v.status === 'requested');
+    if (staleVa.length) {
+      items.push({
+        level: 'watch',
+        title: `${staleVa.length} VA request${staleVa.length > 1 ? 's' : ''} sitting unmatched`,
+        meta: staleVa.map(v => v.client).join(', '),
+        action: () => openAssignPicker('va', staleVa[0].id),
+        actionLabel: 'Match now',
+      });
+    }
+
+    const coldLeads = state.leads.filter(l => l.status === 'No response');
+    if (coldLeads.length) {
+      items.push({
+        level: 'watch',
+        title: `${coldLeads.length} lead${coldLeads.length > 1 ? 's' : ''} marked "No response" — worth a follow-up`,
+        meta: coldLeads.map(l => l.name).join(', '),
+        action: () => navigate('leads'),
+        actionLabel: 'View leads',
+      });
+    }
+
+    const freeNotaries = state.notaryRoster.filter(n => n.vetted && activeBookingCount(n.name) === 0);
+    if (freeNotaries.length) {
+      items.push({
+        level: 'opportunity',
+        title: `${freeNotaries.length} vetted notar${freeNotaries.length > 1 ? 'ies have' : 'y has'} zero jobs on the books right now`,
+        meta: freeNotaries.map(n => n.name).join(', ') + ' — good candidates for new business from Scout',
+        action: () => navigate('notary-scout'),
+        actionLabel: 'Run Scout',
+      });
+    }
+
+    const box = document.getElementById('copilot-briefing-body');
+    if (!box) return;
+    if (!items.length) {
+      box.innerHTML = '<div class="brief-clean">Nothing urgent — every booking is assigned and every lead has been worked.</div>';
+      return;
+    }
+    box.innerHTML = items.map((it, i) => `
+      <div class="brief-item ${it.level}">
+        <div class="brief-item-body">
+          <div class="brief-item-title">${esc(it.title)}</div>
+          <div class="brief-item-meta">${esc(it.meta)}</div>
+        </div>
+        <button class="btn sm ${it.level === 'urgent' ? 'primary' : 'ghost'}" onclick="runCopilotAction(${i})">${esc(it.actionLabel)}</button>
+      </div>
+    `).join('');
+    window._copilotItems = items;
+  }
+  function runCopilotAction(i) {
+    const it = (window._copilotItems || [])[i];
+    if (it) it.action();
+  }
+
+  function renderNotaryBoard() {
+    const cols = [
+      { key: 'unassigned', label: 'Unassigned' },
+      { key: 'assigned', label: 'Assigned' },
+      { key: 'completed', label: 'Completed' },
+    ];
+    const board = document.getElementById('notary-board');
+    board.innerHTML = cols.map(c => {
+      const items = state.notaryBookings.filter(b => b.status === c.key);
+      return `
+        <div class="board-col">
+          <div class="board-col-h"><span>${c.label}</span><span>${items.length}</span></div>
+          ${items.length ? items.map(b => `
+            <div class="card clickable" onclick="openDetail('notary','${b.id}')">
+              <div class="card-name">${esc(b.client)}${b.notes.length ? ` <span class="tag muted" style="font-size:9px;">${b.notes.length} note${b.notes.length > 1 ? 's' : ''}</span>` : ''}${c.key === 'unassigned' && b.date <= relDate(0) ? ' <span class="tag red">Needs attention</span>' : ''}</div>
+              <div class="card-meta">${esc(b.docType)}<br>${b.date} · ${b.time}<br>${esc(b.address)}</div>
+              <div class="card-foot">
+                <span class="tag muted">${b.source}</span>
+                ${c.key === 'unassigned' ? `<button class="btn sm gold" onclick="event.stopPropagation(); assignBooking('${b.id}')">Assign</button>` : ''}
+                ${c.key === 'assigned' ? `<button class="btn sm primary" onclick="event.stopPropagation(); completeBooking('${b.id}')">Complete</button>` : ''}
+                ${c.key === 'completed' ? `<span class="tag emerald">${b.assignee}</span>` : ''}
+              </div>
+            </div>
+          `).join('') : '<div class="empty">Empty</div>'}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderVaBoard() {
+    const cols = [
+      { key: 'requested', label: 'Requested' },
+      { key: 'matched', label: 'Matched' },
+      { key: 'interviewing', label: 'Interviewing' },
+      { key: 'placed', label: 'Placed' },
+    ];
+    const board = document.getElementById('va-board');
+    board.classList.add('cols-2');
+    board.innerHTML = cols.map(c => {
+      const items = state.vaRequests.filter(v => v.status === c.key);
+      return `
+        <div class="board-col">
+          <div class="board-col-h"><span>${c.label}</span><span>${items.length}</span></div>
+          ${items.length ? items.map(v => `
+            <div class="card clickable" onclick="openDetail('va','${v.id}')">
+              <div class="card-name">${esc(v.client)}${v.notes.length ? ` <span class="tag muted" style="font-size:9px;">${v.notes.length} note${v.notes.length > 1 ? 's' : ''}</span>` : ''}</div>
+              <div class="card-meta">${esc(v.skills)}<br>${esc(v.hours)} · ${esc(v.budget)}${v.assignee ? '<br>Candidate: ' + esc(v.assignee) : ''}</div>
+              <div class="card-foot">
+                <span class="tag muted">${v.source}</span>
+                ${c.key !== 'placed' ? `<button class="btn sm gold" onclick="event.stopPropagation(); advanceVa('${v.id}')">Advance</button>` : `<span class="tag emerald">Active</span>`}
+              </div>
+            </div>
+          `).join('') : '<div class="empty">Empty</div>'}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function rosterRow(p, role) {
+    return `<tr>
+      <td><strong>${esc(p.name)}</strong></td>
+      <td>${esc(p.field)}</td>
+      <td>${esc(p.phone)}</td>
+      <td>${p.vetted ? '<span class="vetted-badge">Vetted</span>' : '<span class="tag amber">Pending review</span>'}</td>
+      <td><span class="tag muted">${role}</span></td>
+    </tr>`;
+  }
+
+  function renderNotaryRoster() {
+    const t = document.getElementById('notary-roster-table');
+    t.innerHTML = `<tr><th>Name</th><th>Service area</th><th>Phone</th><th>Status</th><th>Role</th></tr>` +
+      state.notaryRoster.map(n => rosterRow(n, 'Field Notary')).join('');
+  }
+  function renderVaRoster() {
+    const t = document.getElementById('va-roster-table');
+    t.innerHTML = `<tr><th>Name</th><th>Core skills</th><th>Phone</th><th>Status</th><th>Role</th></tr>` +
+      state.vaRoster.map(a => rosterRow(a, 'Virtual Assistant')).join('');
+  }
+  function renderPool() {
+    const t = document.getElementById('pool-table');
+    const rows = [
+      ...state.notaryRoster.filter(n => n.vetted).map(n => rosterRow(n, 'Field Notary')),
+      ...state.vaRoster.filter(a => a.vetted).map(a => rosterRow(a, 'Virtual Assistant')),
+    ];
+    t.innerHTML = `<tr><th>Name</th><th>Area / skills</th><th>Phone</th><th>Status</th><th>Role</th></tr>` + rows.join('');
+    const pendingCount = state.notaryRoster.filter(n => !n.vetted).length + state.vaRoster.filter(a => !a.vetted).length;
+    const noteEl = document.getElementById('pool-pending-note');
+    if (noteEl) noteEl.textContent = pendingCount ? `${pendingCount} more currently pending review — not shown here until they pass inspection.` : '';
+  }
+
+  function renderLeads() {
+    const t = document.getElementById('leads-table');
+    t.innerHTML = `<tr><th>Name</th><th>Channel</th><th>Business</th><th>Date</th><th>Status</th></tr>` +
+      state.leads.map(l => `<tr>
+        <td><strong>${l.name}</strong></td>
+        <td><span class="tag ${l.channel === 'Google Ads' ? 'primary' : 'gold'}">${l.channel}</span></td>
+        <td>${l.business}</td>
+        <td>${l.date}</td>
+        <td>${l.status}</td>
+      </tr>`).join('');
+    renderChannelBars('leads-channel-bars');
+  }
+
+  function computeLeadStats() {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 7);
+    const recent = state.leads.filter(l => new Date(l.date) >= cutoff);
+    const google = recent.filter(l => l.channel === 'Google Ads').length;
+    return { total: recent.length, google, other: recent.length - google };
+  }
+
+  function renderChannelBars(containerId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const stats = computeLeadStats();
+    const denom = (stats.google + stats.other) || 1;
+    const googlePct = Math.round((stats.google / denom) * 100);
+    const otherPct = 100 - googlePct;
+    el.innerHTML = `
+      <div class="channel-bar-wrap">
+        <div class="channel-bar-label"><span>Google Ads</span><span class="n">${stats.google}</span></div>
+        <div class="channel-bar"><div class="channel-bar-fill" style="width:${googlePct}%; background:var(--primary);"></div></div>
+      </div>
+      <div class="channel-bar-wrap">
+        <div class="channel-bar-label"><span>Personal / Referral</span><span class="n">${stats.other}</span></div>
+        <div class="channel-bar"><div class="channel-bar-fill" style="width:${otherPct}%; background:var(--gold);"></div></div>
+      </div>
+    `;
+  }
+
+  function renderInbox() {
+    const box = document.getElementById('inbox-list');
+    box.innerHTML = state.inbox.map(e => `
+      <div class="row">
+        <div class="row-lead">${e.sentAt.split(' ')[0].slice(5)}</div>
+        <div class="row-body">
+          <div class="row-name">${e.subject}</div>
+          <div class="row-meta">to ${e.to} · sent ${e.sentAt}</div>
+        </div>
+        <span class="tag emerald">Sent</span>
+      </div>
+    `).join('');
+  }
+
+  function renderDocuments() {
+    const t = document.getElementById('documents-table');
+    if (!t) return;
+    t.innerHTML = `<tr><th>Document</th><th>Linked booking</th><th>Received</th><th>Status</th></tr>` +
+      state.documents.map(d => `<tr>
+        <td><strong>${d.name}</strong></td>
+        <td>${d.linkedTo}</td>
+        <td>${d.received}</td>
+        <td>${d.status === 'Filed' ? '<span class="tag emerald">Filed</span>' : '<span class="tag amber">Awaiting signature</span>'}</td>
+      </tr>`).join('');
+  }
+
+  function renderMyJobs() {
+    const p = getCurrentProfile();
+    if (!p.rosterName) return;
+    document.getElementById('my-jobs-subtitle').textContent = `Field Notary · ${p.name}`;
+    const mine = state.notaryBookings.filter(b => b.assignee === p.rosterName && b.status !== 'completed');
+    const badge = document.getElementById('badge-my-jobs');
+    if (badge) badge.textContent = mine.length;
+    const box = document.getElementById('my-jobs-list');
+    box.innerHTML = mine.length ? mine.map(b => `
+      <div class="row clickable" onclick="openDetail('notary','${b.id}')">
+        <div class="row-lead">${b.date.slice(5)} ${b.time}</div>
+        <div class="row-body">
+          <div class="row-name">${esc(b.client)} — ${esc(b.docType)}</div>
+          <div class="row-meta">${esc(b.address)}</div>
+        </div>
+        <button class="btn sm primary" onclick="event.stopPropagation(); completeBooking('${b.id}')">Complete</button>
+      </div>
+    `).join('') : '<div class="empty">Nothing assigned to you right now.</div>';
+  }
+
+  function updateBadges() {
+    document.getElementById('badge-notary-bookings').textContent = state.notaryBookings.filter(b => b.status !== 'completed').length;
+    document.getElementById('badge-va-requests').textContent = state.vaRequests.filter(v => v.status !== 'placed').length;
+  }
+
+  function renderAll() {
+    renderDashboard();
+    renderNotaryBoard();
+    renderVaBoard();
+    renderNotaryRoster();
+    renderVaRoster();
+    renderPool();
+    renderLeads();
+    renderInbox();
+    renderDocuments();
+    renderMyJobs();
+    updateBadges();
+  }
+
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  applyProfile();
+  if (currentProfileId !== 'alex') navigate(getCurrentProfile().landOn);
+
+  renderAll();
+</script>
+
+</body>
+</html>
