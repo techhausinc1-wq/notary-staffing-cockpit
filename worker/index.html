@@ -1159,7 +1159,9 @@
   function emailDraft() {
     const ta = document.getElementById('draft-text-area');
     if (!ta) return;
-    window.location.href = `mailto:?subject=${encodeURIComponent('Update on your request')}&body=${encodeURIComponent(ta.value)}`;
+    const url = 'https://mail.google.com/mail/?view=cm&fs=1&su=' + encodeURIComponent('Update on your request') +
+      '&body=' + encodeURIComponent(ta.value);
+    window.open(url, '_blank', 'noopener');
   }
 
   function submitNote(evt) {
@@ -1333,7 +1335,7 @@
     const body = encodeURIComponent(
       `Hi,\n\nWe work with businesses like yours (${category}) to provide reliable, vetted mobile notary service for your clients — same-day availability, licensed and background-checked notaries only.\n\nWould you be open to a quick call about setting up an ongoing referral relationship?\n\nThanks,\nAlex`
     );
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${body}`, '_blank', 'noopener');
     toast('Marked contacted — draft opened');
     if (lastScoutQuery) {
       renderScoutResultsPanel(lastScoutQuery.zip, getScoutProspects(lastScoutQuery.zip, lastScoutQuery.category));
@@ -1352,6 +1354,24 @@
     return (str || '').toLowerCase().split(/[^a-z]+/).filter(Boolean);
   }
 
+  // County a booking actually falls in, derived from the service address --
+  // used to check real coverage-area fit instead of a hardcoded county.
+  // Cities reflect the counties already represented on the notary roster.
+  const COUNTY_CITY_MAP = [
+    { county: 'Comal', cities: ['new braunfels', 'canyon lake', 'bulverde'] },
+    { county: 'Guadalupe', cities: ['seguin', 'schertz', 'cibolo'] },
+    { county: 'Kendall', cities: ['boerne', 'comfort'] },
+    { county: 'Medina', cities: ['hondo', 'castroville', 'natalia'] },
+    { county: 'Bexar', cities: ['san antonio', 'alamo heights', 'terrell hills', 'olmos park', 'converse', 'live oak'] },
+  ];
+  function countyForAddress(address) {
+    const a = (address || '').toLowerCase();
+    for (const row of COUNTY_CITY_MAP) {
+      if (row.cities.some(c => a.includes(c))) return row.county;
+    }
+    return 'Bexar'; // most bookings are in San Antonio proper; safe default
+  }
+
   function scoreNotaryCandidate(person, booking) {
     const reasons = [];
     let score = 0;
@@ -1359,15 +1379,21 @@
     if (activeJobs === 0) { score += 3; reasons.push('No active jobs right now'); }
     else { score -= activeJobs * 2; reasons.push(`${activeJobs} active job${activeJobs > 1 ? 's' : ''} already on the books`); }
 
+    // Real double-booking check -- flag (don't just silently allow) assigning
+    // someone who already has another booking at this exact date + time.
+    const doubleBooked = state.notaryBookings.some(b => b.id !== booking.id && b.assignee === person.name && b.date === booking.date && b.time === booking.time && b.status !== 'completed');
+    if (doubleBooked) { score -= 10; reasons.push(`Already booked elsewhere at ${booking.time} on ${booking.date}`); }
+
     const isRemote = /remote/i.test(booking.address);
     if (isRemote) {
       const priorRon = state.notaryBookings.some(b => b.assignee === person.name && /remote online notary/i.test(b.docType));
       if (priorRon) { score += 5; reasons.push('Has handled Remote Online Notary sessions before'); }
       else { reasons.push('No prior RON session on record'); }
     } else {
-      const covers = /bexar/i.test(person.field);
+      const county = countyForAddress(booking.address);
+      const covers = new RegExp(county, 'i').test(person.field);
       if (covers) { score += 3; reasons.push(`Covers ${person.field}`); }
-      else { reasons.push(`Covers ${person.field} — outside the usual area`); }
+      else { reasons.push(`Covers ${person.field} — outside the usual area (booking is in ${county} County)`); }
     }
 
     const docCategory = (booking.docType || '').split(/[—-]/)[0].trim();
